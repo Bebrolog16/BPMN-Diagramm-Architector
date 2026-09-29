@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="http://www.omg.org/spec/BPMN/20100524/MODEL" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.30.1">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Participant_1" name="Process Participant" processRef="Process_1"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="start_event_root" name="Start"/>
+    <bpmn:endEvent id="end_event_root" name="End"/>
+    <bpmn:userTask id="user_task_5d6a3b31" name="Give Task"/>
+    <bpmn:scriptTask id="script_task_95025799" name="Easy Task"/>
+    <bpmn:scriptTask id="script_task_36c0b050" name="Medium Task"/>
+    <bpmn:scriptTask id="script_task_7c3ef71e" name="Hard Task"/>
+    <bpmn:exclusiveGateway id="ex_gateway_41ed1490" name="Select Task"/>
+    <bpmn:sequenceFlow id="Flow_start_event_root_user_task_5d6a3b31" sourceRef="start_event_root" targetRef="user_task_5d6a3b31"/>
+    <bpmn:sequenceFlow id="Flow_user_task_5d6a3b31_ex_gateway_41ed1490" sourceRef="user_task_5d6a3b31" targetRef="ex_gateway_41ed1490"/>
+    <bpmn:sequenceFlow id="Flow_ex_gateway_41ed1490_script_task_95025799" sourceRef="ex_gateway_41ed1490" targetRef="script_task_95025799"/>
+    <bpmn:sequenceFlow id="Flow_ex_gateway_41ed1490_script_task_36c0b050" sourceRef="ex_gateway_41ed1490" targetRef="script_task_36c0b050"/>
+    <bpmn:sequenceFlow id="Flow_ex_gateway_41ed1490_script_task_7c3ef71e" sourceRef="ex_gateway_41ed1490" targetRef="script_task_7c3ef71e"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:plane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <bpmndi:BPMNShape id="start_event_root_di" bpmnElement="start_event_root">
+        <di:bounds x="82.0" y="107.0" width="36.0" height="36.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="end_event_root_di" bpmnElement="end_event_root">
+        <di:bounds x="82.0" y="217.0" width="36.0" height="36.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="user_task_5d6a3b31_di" bpmnElement="user_task_5d6a3b31">
+        <di:bounds x="300.0" y="85.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="script_task_95025799_di" bpmnElement="script_task_95025799">
+        <di:bounds x="800.0" y="235.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="script_task_36c0b050_di" bpmnElement="script_task_36c0b050">
+        <di:bounds x="800.0" y="385.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="script_task_7c3ef71e_di" bpmnElement="script_task_7c3ef71e">
+        <di:bounds x="800.0" y="535.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ex_gateway_41ed1490_di" bpmnElement="ex_gateway_41ed1490">
+        <di:bounds x="575.0" y="100.0" width="50.0" height="50.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_start_event_root_user_task_5d6a3b31_di" bpmnElement="Flow_start_event_root_user_task_5d6a3b31">
+        <di:waypoint x="118.0" y="125.0"/>
+        <di:waypoint x="300.0" y="125.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_5d6a3b31_ex_gateway_41ed1490_di" bpmnElement="Flow_user_task_5d6a3b31_ex_gateway_41ed1490">
+        <di:waypoint x="400.0" y="125.0"/>
+        <di:waypoint x="575.0" y="125.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ex_gateway_41ed1490_script_task_95025799_di" bpmnElement="Flow_ex_gateway_41ed1490_script_task_95025799">
+        <di:waypoint x="625.0" y="125.0"/>
+        <di:waypoint x="800.0" y="275.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ex_gateway_41ed1490_script_task_36c0b050_di" bpmnElement="Flow_ex_gateway_41ed1490_script_task_36c0b050">
+        <di:waypoint x="625.0" y="125.0"/>
+        <di:waypoint x="800.0" y="425.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ex_gateway_41ed1490_script_task_7c3ef71e_di" bpmnElement="Flow_ex_gateway_41ed1490_script_task_7c3ef71e">
+        <di:waypoint x="625.0" y="125.0"/>
+        <di:waypoint x="800.0" y="575.0"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:plane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

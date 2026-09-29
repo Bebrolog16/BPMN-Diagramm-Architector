@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="http://www.omg.org/spec/BPMN/20100524/MODEL" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.30.1">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Participant_1" name="Process Participant" processRef="Process_1"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="start_event_root" name="Start"/>
+    <bpmn:endEvent id="end_event_root" name="End"/>
+    <bpmn:task id="task_52391758" name="Place Order"/>
+    <bpmn:task id="task_93dd28e0" name="Verify Order"/>
+    <bpmn:exclusiveGateway id="ex_gateway_7d14189f" name="Order Valid?"/>
+    <bpmn:task id="task_9baa0f30" name="Fix Order Details"/>
+    <bpmn:parallelGateway id="par_gateway_b4af28b3" name="Start Parallel"/>
+    <bpmn:task id="task_4cbfddf8" name="Pick Items"/>
+    <bpmn:task id="task_7b34aa3f" name="Prepare Invoice"/>
+    <bpmn:parallelGateway id="par_gateway_143d5fcc" name="Join Parallel"/>
+    <bpmn:task id="task_f75525c7" name="Ship Order"/>
+    <bpmn:sequenceFlow id="Flow_start_event_root_task_52391758" sourceRef="start_event_root" targetRef="task_52391758"/>
+    <bpmn:sequenceFlow id="Flow_task_52391758_task_93dd28e0" sourceRef="task_52391758" targetRef="task_93dd28e0"/>
+    <bpmn:sequenceFlow id="Flow_task_93dd28e0_ex_gateway_7d14189f" sourceRef="task_93dd28e0" targetRef="ex_gateway_7d14189f"/>
+    <bpmn:sequenceFlow id="Flow_ex_gateway_7d14189f_task_9baa0f30" sourceRef="ex_gateway_7d14189f" targetRef="task_9baa0f30"/>
+    <bpmn:sequenceFlow id="Flow_task_9baa0f30_task_93dd28e0" sourceRef="task_9baa0f30" targetRef="task_93dd28e0"/>
+    <bpmn:sequenceFlow id="Flow_ex_gateway_7d14189f_par_gateway_b4af28b3" sourceRef="ex_gateway_7d14189f" targetRef="par_gateway_b4af28b3"/>
+    <bpmn:sequenceFlow id="Flow_par_gateway_b4af28b3_task_4cbfddf8" sourceRef="par_gateway_b4af28b3" targetRef="task_4cbfddf8"/>
+    <bpmn:sequenceFlow id="Flow_par_gateway_b4af28b3_task_7b34aa3f" sourceRef="par_gateway_b4af28b3" targetRef="task_7b34aa3f"/>
+    <bpmn:sequenceFlow id="Flow_task_4cbfddf8_par_gateway_143d5fcc" sourceRef="task_4cbfddf8" targetRef="par_gateway_143d5fcc"/>
+    <bpmn:sequenceFlow id="Flow_task_7b34aa3f_par_gateway_143d5fcc" sourceRef="task_7b34aa3f" targetRef="par_gateway_143d5fcc"/>
+    <bpmn:sequenceFlow id="Flow_par_gateway_143d5fcc_task_f75525c7" sourceRef="par_gateway_143d5fcc" targetRef="task_f75525c7"/>
+    <bpmn:sequenceFlow id="Flow_task_f75525c7_end_event_root" sourceRef="task_f75525c7" targetRef="end_event_root"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:plane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <bpmndi:BPMNShape id="start_event_root_di" bpmnElement="start_event_root">
+        <di:bounds x="82.0" y="107.0" width="36.0" height="36.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="end_event_root_di" bpmnElement="end_event_root">
+        <di:bounds x="2082.0" y="107.0" width="36.0" height="36.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="task_52391758_di" bpmnElement="task_52391758">
+        <di:bounds x="300.0" y="85.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="task_93dd28e0_di" bpmnElement="task_93dd28e0">
+        <di:bounds x="550.0" y="285.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ex_gateway_7d14189f_di" bpmnElement="ex_gateway_7d14189f">
+        <di:bounds x="825.0" y="300.0" width="50.0" height="50.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="task_9baa0f30_di" bpmnElement="task_9baa0f30">
+        <di:bounds x="1050.0" y="85.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="par_gateway_b4af28b3_di" bpmnElement="par_gateway_b4af28b3">
+        <di:bounds x="1075.0" y="300.0" width="50.0" height="50.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="task_4cbfddf8_di" bpmnElement="task_4cbfddf8">
+        <di:bounds x="1300.0" y="435.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="task_7b34aa3f_di" bpmnElement="task_7b34aa3f">
+        <di:bounds x="1300.0" y="285.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="par_gateway_143d5fcc_di" bpmnElement="par_gateway_143d5fcc">
+        <di:bounds x="1575.0" y="300.0" width="50.0" height="50.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="task_f75525c7_di" bpmnElement="task_f75525c7">
+        <di:bounds x="1800.0" y="585.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_start_event_root_task_52391758_di" bpmnElement="Flow_start_event_root_task_52391758">
+        <di:waypoint x="118.0" y="125.0"/>
+        <di:waypoint x="300.0" y="125.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_task_52391758_task_93dd28e0_di" bpmnElement="Flow_task_52391758_task_93dd28e0">
+        <di:waypoint x="400.0" y="125.0"/>
+        <di:waypoint x="550.0" y="325.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_task_93dd28e0_ex_gateway_7d14189f_di" bpmnElement="Flow_task_93dd28e0_ex_gateway_7d14189f">
+        <di:waypoint x="650.0" y="325.0"/>
+        <di:waypoint x="825.0" y="325.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ex_gateway_7d14189f_task_9baa0f30_di" bpmnElement="Flow_ex_gateway_7d14189f_task_9baa0f30">
+        <di:waypoint x="875.0" y="325.0"/>
+        <di:waypoint x="1050.0" y="125.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_task_9baa0f30_task_93dd28e0_di" bpmnElement="Flow_task_9baa0f30_task_93dd28e0">
+        <di:waypoint x="1150.0" y="125.0"/>
+        <di:waypoint x="550.0" y="325.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ex_gateway_7d14189f_par_gateway_b4af28b3_di" bpmnElement="Flow_ex_gateway_7d14189f_par_gateway_b4af28b3">
+        <di:waypoint x="875.0" y="325.0"/>
+        <di:waypoint x="1075.0" y="325.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_par_gateway_b4af28b3_task_4cbfddf8_di" bpmnElement="Flow_par_gateway_b4af28b3_task_4cbfddf8">
+        <di:waypoint x="1125.0" y="325.0"/>
+        <di:waypoint x="1300.0" y="475.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_par_gateway_b4af28b3_task_7b34aa3f_di" bpmnElement="Flow_par_gateway_b4af28b3_task_7b34aa3f">
+        <di:waypoint x="1125.0" y="325.0"/>
+        <di:waypoint x="1300.0" y="325.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_task_4cbfddf8_par_gateway_143d5fcc_di" bpmnElement="Flow_task_4cbfddf8_par_gateway_143d5fcc">
+        <di:waypoint x="1400.0" y="475.0"/>
+        <di:waypoint x="1575.0" y="325.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_task_7b34aa3f_par_gateway_143d5fcc_di" bpmnElement="Flow_task_7b34aa3f_par_gateway_143d5fcc">
+        <di:waypoint x="1400.0" y="325.0"/>
+        <di:waypoint x="1575.0" y="325.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_par_gateway_143d5fcc_task_f75525c7_di" bpmnElement="Flow_par_gateway_143d5fcc_task_f75525c7">
+        <di:waypoint x="1625.0" y="325.0"/>
+        <di:waypoint x="1800.0" y="625.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_task_f75525c7_end_event_root_di" bpmnElement="Flow_task_f75525c7_end_event_root">
+        <di:waypoint x="1900.0" y="625.0"/>
+        <di:waypoint x="2082.0" y="125.0"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:plane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

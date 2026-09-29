@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPMN AI Assistant</title>
+    <!-- BPMN-js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/diagram-js.css">
+    <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-font/css/bpmn-font.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; background: #f4f7f6; }
+        #sidebar { width: 400px; display: flex; flex-direction: column; border-right: 1px solid #ddd; background: #fff; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
+        #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .message { padding: 10px; border-radius: 8px; max-width: 80%; line-height: 1.4; }
+        .user { align-self: flex-end; background: #007bff; color: white; }
+        .bot { align-self: flex-start; background: #e9e9eb; color: #333; }
+        #input-area { padding: 20px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
+        #user-input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; outline: none; }
+        #send-btn { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        #send-btn:disabled { background: #ccc; }
+        #viewer-container { flex: 1; position: relative; background: #fff; }
+        #canvas { width: 100%; height: 100%; }
+        #controls { position: absolute; top: 20px; right: 20px; z-index: 100; display: flex; gap: 10px; }
+        .btn-secondary { padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        #loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); 
+                           display: none; justify-content: center; align-items: center; z-index: 1000; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div id="chat-container">
+            <div class="message bot">Hello! Describe your business process, and I'll generate a BPMN diagram for you.</div>
+        </div>
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Enter process description...">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+    <div id="viewer-container">
+        <div id="loading-overlay">Generating Diagram...</div>
+        <div id="controls">
+            <button class="btn-secondary" id="download-btn">Download .bpmn</button>
+        </div>
+        <div id="canvas"></div>
+    </div>
+
+    <!-- BPMN-js Library -->
+    <script src="https://unpkg.com/bpmn-js@17.11.1/dist/bpmn-modeler.production.min.js"></script>
+    <script>
+        const bpmnModeler = new BpmnJS({ container: '#canvas' });
+        let currentXml = "";
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const btn = document.getElementById('send-btn');
+            const chat = document.getElementById('chat-container');
+            const loading = document.getElementById('loading-overlay');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            // Add user message
+            chat.innerHTML += `<div class="message user">${text}</div>`;
+            input.value = '';
+            btn.disabled = true;
+            loading.style.display = 'flex';
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Render XML in bpmn-js
+                    await bpmnModeler.importXML(data.xml);
+                    chat.innerHTML += `<div class="message bot">Diagram generated successfully!</div>`;
+                } else {
+                    chat.innerHTML += `<div class="message bot" style="color: red;">Error: ${data.detail || 'Generation failed'}</div>`;
+                }
+            } catch (e) {
+                chat.innerHTML += `<div class="message bot" style="color: red;">Connection error. Is the server running?</div>`;
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+                chat.scrollTop = chat.scrollHeight;
+            }
+        }
+
+        document.getElementById('send-btn').onclick = sendMessage;
+        document.getElementById('user-input').onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
+        document.getElementById('download-btn').onclick = () => {
+            window.location.href = '/download';
+        };
+    </script>
+</body>
+</html>

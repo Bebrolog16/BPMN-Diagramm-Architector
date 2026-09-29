@@ -1,0 +1,116 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" targetNamespace="http://www.omg.org/spec/BPMN/20100524/MODEL" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="18.30.1">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Participant_1" name="Process Participant" processRef="Process_1"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="start_event_root" name="Start"/>
+    <bpmn:endEvent id="end_event_root" name="End"/>
+    <bpmn:userTask id="user_task_181723af" name="Create Task"/>
+    <bpmn:userTask id="user_task_b5589810" name="Assign Task"/>
+    <bpmn:userTask id="user_task_15ba814d" name="Give Hard Task"/>
+    <bpmn:userTask id="user_task_95e42278" name="Give Medium Task"/>
+    <bpmn:userTask id="user_task_1e32ce4c" name="Give Easy Task"/>
+    <bpmn:userTask id="user_task_1dbf8012" name="Complete Work"/>
+    <bpmn:userTask id="user_task_b3f781f9" name="Complete Work"/>
+    <bpmn:userTask id="user_task_66617500" name="Complete Work"/>
+    <bpmn:userTask id="user_task_1e446086" name="Test App"/>
+    <bpmn:sequenceFlow id="Flow_start_event_root_user_task_181723af" sourceRef="start_event_root" targetRef="user_task_181723af"/>
+    <bpmn:sequenceFlow id="Flow_user_task_181723af_user_task_b5589810" sourceRef="user_task_181723af" targetRef="user_task_b5589810"/>
+    <bpmn:sequenceFlow id="Flow_user_task_b5589810_user_task_15ba814d" sourceRef="user_task_b5589810" targetRef="user_task_15ba814d"/>
+    <bpmn:sequenceFlow id="Flow_user_task_b5589810_user_task_95e42278" sourceRef="user_task_b5589810" targetRef="user_task_95e42278"/>
+    <bpmn:sequenceFlow id="Flow_user_task_b5589810_user_task_1e32ce4c" sourceRef="user_task_b5589810" targetRef="user_task_1e32ce4c"/>
+    <bpmn:sequenceFlow id="Flow_user_task_15ba814d_user_task_1dbf8012" sourceRef="user_task_15ba814d" targetRef="user_task_1dbf8012"/>
+    <bpmn:sequenceFlow id="Flow_user_task_95e42278_user_task_b3f781f9" sourceRef="user_task_95e42278" targetRef="user_task_b3f781f9"/>
+    <bpmn:sequenceFlow id="Flow_user_task_1e32ce4c_user_task_66617500" sourceRef="user_task_1e32ce4c" targetRef="user_task_66617500"/>
+    <bpmn:sequenceFlow id="Flow_user_task_1dbf8012_user_task_1e446086" sourceRef="user_task_1dbf8012" targetRef="user_task_1e446086"/>
+    <bpmn:sequenceFlow id="Flow_user_task_b3f781f9_user_task_1e446086" sourceRef="user_task_b3f781f9" targetRef="user_task_1e446086"/>
+    <bpmn:sequenceFlow id="Flow_user_task_66617500_user_task_1e446086" sourceRef="user_task_66617500" targetRef="user_task_1e446086"/>
+    <bpmn:sequenceFlow id="Flow_user_task_1e446086_end_event_root" sourceRef="user_task_1e446086" targetRef="end_event_root"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:plane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <bpmndi:BPMNShape id="start_event_root_di" bpmnElement="start_event_root">
+        <di:bounds x="82.0" y="107.0" width="36.0" height="36.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="end_event_root_di" bpmnElement="end_event_root">
+        <di:bounds x="1582.0" y="107.0" width="36.0" height="36.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="user_task_181723af_di" bpmnElement="user_task_181723af">
+        <di:bounds x="300.0" y="85.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="user_task_b5589810_di" bpmnElement="user_task_b5589810">
+        <di:bounds x="550.0" y="235.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="user_task_15ba814d_di" bpmnElement="user_task_15ba814d">
+        <di:bounds x="800.0" y="385.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="user_task_95e42278_di" bpmnElement="user_task_95e42278">
+        <di:bounds x="800.0" y="495.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="user_task_1e32ce4c_di" bpmnElement="user_task_1e32ce4c">
+        <di:bounds x="800.0" y="605.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="user_task_1dbf8012_di" bpmnElement="user_task_1dbf8012">
+        <di:bounds x="1050.0" y="535.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="user_task_b3f781f9_di" bpmnElement="user_task_b3f781f9">
+        <di:bounds x="1050.0" y="685.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="user_task_66617500_di" bpmnElement="user_task_66617500">
+        <di:bounds x="1050.0" y="835.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="user_task_1e446086_di" bpmnElement="user_task_1e446086">
+        <di:bounds x="1300.0" y="985.0" width="100.0" height="80.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_start_event_root_user_task_181723af_di" bpmnElement="Flow_start_event_root_user_task_181723af">
+        <di:waypoint x="118.0" y="125.0"/>
+        <di:waypoint x="300.0" y="125.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_181723af_user_task_b5589810_di" bpmnElement="Flow_user_task_181723af_user_task_b5589810">
+        <di:waypoint x="400.0" y="125.0"/>
+        <di:waypoint x="550.0" y="275.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_b5589810_user_task_15ba814d_di" bpmnElement="Flow_user_task_b5589810_user_task_15ba814d">
+        <di:waypoint x="650.0" y="275.0"/>
+        <di:waypoint x="800.0" y="425.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_b5589810_user_task_95e42278_di" bpmnElement="Flow_user_task_b5589810_user_task_95e42278">
+        <di:waypoint x="650.0" y="275.0"/>
+        <di:waypoint x="800.0" y="535.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_b5589810_user_task_1e32ce4c_di" bpmnElement="Flow_user_task_b5589810_user_task_1e32ce4c">
+        <di:waypoint x="650.0" y="275.0"/>
+        <di:waypoint x="800.0" y="645.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_15ba814d_user_task_1dbf8012_di" bpmnElement="Flow_user_task_15ba814d_user_task_1dbf8012">
+        <di:waypoint x="900.0" y="425.0"/>
+        <di:waypoint x="1050.0" y="575.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_95e42278_user_task_b3f781f9_di" bpmnElement="Flow_user_task_95e42278_user_task_b3f781f9">
+        <di:waypoint x="900.0" y="535.0"/>
+        <di:waypoint x="1050.0" y="725.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_1e32ce4c_user_task_66617500_di" bpmnElement="Flow_user_task_1e32ce4c_user_task_66617500">
+        <di:waypoint x="900.0" y="645.0"/>
+        <di:waypoint x="1050.0" y="875.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_1dbf8012_user_task_1e446086_di" bpmnElement="Flow_user_task_1dbf8012_user_task_1e446086">
+        <di:waypoint x="1150.0" y="575.0"/>
+        <di:waypoint x="1300.0" y="1025.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_b3f781f9_user_task_1e446086_di" bpmnElement="Flow_user_task_b3f781f9_user_task_1e446086">
+        <di:waypoint x="1150.0" y="725.0"/>
+        <di:waypoint x="1300.0" y="1025.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_66617500_user_task_1e446086_di" bpmnElement="Flow_user_task_66617500_user_task_1e446086">
+        <di:waypoint x="1150.0" y="875.0"/>
+        <di:waypoint x="1300.0" y="1025.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_user_task_1e446086_end_event_root_di" bpmnElement="Flow_user_task_1e446086_end_event_root">
+        <di:waypoint x="1400.0" y="1025.0"/>
+        <di:waypoint x="1582.0" y="125.0"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:plane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
