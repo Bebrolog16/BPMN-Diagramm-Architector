@@ -24,7 +24,10 @@ class ProcessRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
-    with open("index.html", "r", encoding="utf-8") as f:
+    # Dynamically calculate the path to index.html relative to this file
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    index_path = os.path.join(current_dir, "index.html")
+    with open(index_path, "r", encoding="utf-8") as f:
         return f.read()
 
 @app.post("/generate")
