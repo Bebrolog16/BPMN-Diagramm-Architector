@@ -46,8 +46,8 @@ class TestBPMNSystem(unittest.TestCase):
         layout = LayoutEngine(self.sdk.graph)
         layout.calculate_layout()
 
-        # Start node should be at X=100
-        self.assertEqual(self.sdk.graph.nodes[self.sdk.ROOT_START_TASK_ID].coords[0], 100.0)
+        # Start node X coordinate should be START_X - (width/2) = 100.0 - 18.0 = 82.0
+        self.assertEqual(self.sdk.graph.nodes[self.sdk.ROOT_START_TASK_ID].coords[0], 82.0)
         # T1 should be to the right of start
         self.assertGreater(self.sdk.graph.nodes[t1].coords[0], 100.0)
         # T2 should be to the right of T1

@@ -2,7 +2,7 @@ import os
 import sys
 
 # --- Configuration ---
-MODEL_NAME = "qwen2.5-coder:7b-instruct"
+MODEL_NAME = "llama3.2:3b"
 OUTPUT_FILE = "final_result.bpmn"
 # ---------------------
 

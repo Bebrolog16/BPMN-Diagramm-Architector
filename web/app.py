@@ -16,7 +16,7 @@ from core.prompts import SYSTEM_PROMPT
 app = FastAPI()
 
 # Config
-MODEL_NAME = "qwen2.5-coder:7b-instruct"
+MODEL_NAME = "llama3.2:3b"
 OUTPUT_FILE = "final_result.bpmn"
 
 class ProcessRequest(BaseModel):
@@ -24,7 +24,9 @@ class ProcessRequest(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
-    with open("index.html", "r", encoding="utf-8") as f:
+    # Use absolute path relative to this file to avoid FileNotFoundError when running from root
+    html_path = os.path.join(os.path.dirname(__file__), "index.html")
+    with open(html_path, "r", encoding="utf-8") as f:
         return f.read()
 
 @app.post("/generate")
@@ -69,3 +71,8 @@ async def download_file():
     if os.path.exists(OUTPUT_FILE):
         return FileResponse(OUTPUT_FILE, filename="diagram.bpmn")
     raise HTTPException(status_code=404, detail="File not found")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
