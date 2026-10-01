@@ -1,15 +1,12 @@
 import os
 import sys
 
-# --- Configuration ---
-MODEL_NAME = "qwen2.5-coder:7b-instruct"
-OUTPUT_FILE = "final_result.bpmn"
-# ---------------------
-
 # Add project root to sys.path for imports to work
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
+
+from core.config import MAX_GENERATION_ATTEMPTS, MODEL_NAME, OUTPUT_FILE
 
 from core.llm_client import OllamaBPMNClient
 from core.executor import CodeExecutor
@@ -34,7 +31,7 @@ def run_bpmn_pipeline(user_text):
     
     current_code = None
     last_error = None
-    max_attempts = 3
+    max_attempts = MAX_GENERATION_ATTEMPTS
     
     for attempt in range(1, max_attempts + 1):
         log(f"Attempt {attempt}/{max_attempts}...", "INFO")

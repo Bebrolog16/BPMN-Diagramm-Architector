@@ -3,98 +3,719 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPMN AI Assistant</title>
+    <title>BPMN AI Architect | Liquid Glass</title>
     <!-- BPMN-js CSS -->
     <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/diagram-js.css">
     <link rel="stylesheet" href="https://unpkg.com/bpmn-js@17.11.1/dist/assets/bpmn-font/css/bpmn-font.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; background: #f4f7f6; }
-        #sidebar { width: 400px; display: flex; flex-direction: column; border-right: 1px solid #ddd; background: #fff; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
-        #chat-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 10px; border-radius: 8px; max-width: 80%; line-height: 1.4; }
-        .user { align-self: flex-end; background: #007bff; color: white; }
-        .bot { align-self: flex-start; background: #e9e9eb; color: #333; }
-        #input-area { padding: 20px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
-        #user-input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; outline: none; }
-        #send-btn { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        #send-btn:disabled { background: #ccc; }
-        #viewer-container { flex: 1; position: relative; background: #fff; }
-        #canvas { width: 100%; height: 100%; }
-        #controls { position: absolute; top: 20px; right: 20px; z-index: 100; display: flex; gap: 10px; }
-        .btn-secondary { padding: 8px 15px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
-        #loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); 
-                           display: none; justify-content: center; align-items: center; z-index: 1000; font-weight: bold; }
+        :root {
+            color-scheme: light;
+            --text-main: #202938;
+            --text-secondary: #647084;
+            --accent-color: #526fca;
+            --user-msg-bg: #526fca;
+            --user-msg-text: #fff;
+            --bot-msg-bg: rgba(255,255,255,.70);
+            --bot-msg-text: #283345;
+            --glass-fill: rgba(255,255,255,.62);
+            --glass-strong: rgba(255,255,255,.82);
+            --glass-border: rgba(255,255,255,.82);
+            --control-fill: rgba(255,255,255,.76);
+            --shadow: 0 20px 55px rgba(47,59,80,.10), inset 0 1px 0 rgba(255,255,255,.92);
+            --radius-xl: 26px;
+            --radius-lg: 18px;
+            --page-bg: linear-gradient(145deg, #f7f8fa 0%, #edf0f4 100%);
+            --muted-fill: rgba(255,255,255,.52);
+            --hover-fill: rgba(255,255,255,.44);
+            --active-fill: rgba(255,255,255,.74);
+            --line-color: rgba(92,107,129,.12);
+            --popover-bg: rgba(255,255,255,.97);
+            --dialog-bg: rgba(250,251,253,.98);
+            --overlay-bg: rgba(246,248,251,.72);
+            --canvas-dot: rgba(93,109,134,.25);
+            --canvas-fill: rgba(255,255,255,.14);
+            --control-border: rgba(255,255,255,.9);
+            --shadow-color: rgba(42,53,72,.12);
+        }
+        body[data-theme="dark"] {
+            color-scheme: dark;
+            --text-main: #e8edf6;
+            --text-secondary: #a7b2c5;
+            --bot-msg-bg: rgba(36,43,57,.82);
+            --bot-msg-text: #e5ebf5;
+            --glass-fill: rgba(27,33,45,.78);
+            --glass-strong: rgba(31,38,52,.96);
+            --glass-border: rgba(180,194,218,.17);
+            --control-fill: rgba(32,39,53,.88);
+            --shadow: 0 20px 55px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.07);
+            --page-bg: radial-gradient(ellipse at top left, #252d3d 0%, #171c27 55%, #11151d 100%);
+            --muted-fill: rgba(255,255,255,.055);
+            --hover-fill: rgba(255,255,255,.055);
+            --active-fill: rgba(115,139,199,.16);
+            --line-color: rgba(180,194,218,.13);
+            --popover-bg: rgba(35,42,57,.98);
+            --dialog-bg: rgba(35,42,57,.98);
+            --overlay-bg: rgba(16,20,29,.78);
+            --canvas-dot: rgba(187,201,225,.20);
+            --canvas-fill: rgba(24,30,42,.28);
+            --control-border: rgba(180,194,218,.2);
+            --shadow-color: rgba(0,0,0,.28);
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%; margin: 0; overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+            color: var(--text-main); background: var(--page-bg); transition: background .25s ease, color .25s ease;
+        }
+        body { min-width: 340px; }
+        .app-container {
+            position: relative; z-index: 1; display: grid; grid-template-columns: minmax(230px, 260px) minmax(320px, 370px) minmax(0, 1fr);
+            gap: 14px; width: 100vw; height: 100vh; padding: 16px;
+        }
+        #history-sidebar, #sidebar, #viewer-container {
+            min-width: 0; position: relative; border: 1px solid var(--glass-border); border-radius: var(--radius-xl);
+            background: var(--glass-fill); box-shadow: var(--shadow);
+            backdrop-filter: blur(22px) saturate(1.15); -webkit-backdrop-filter: blur(22px) saturate(1.15);
+        }
+        #history-sidebar { display: flex; flex-direction: column; overflow: visible; padding: 15px 11px 12px; animation: panelEnter .42s ease both; }
+        @keyframes panelEnter { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+        .history-heading { display: flex; align-items: center; justify-content: space-between; padding: 2px 5px 13px; }
+        .history-heading h2 { margin: 0; font-size: 14px; letter-spacing: -.2px; font-weight: 650; }
+        #new-session { min-height: 32px; border: 1px solid rgba(82,111,202,.15); border-radius: 10px; padding: 0 10px; color: #425d9f; background: rgba(255,255,255,.62); font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; transition: background .18s, transform .18s; }
+        #new-session:hover { background: white; transform: translateY(-1px); }
+        .history-search { position: relative; padding: 0 2px 13px; }
+        .history-search input { width: 100%; height: 36px; border: 1px solid rgba(100,115,138,.16); border-radius: 11px; padding: 0 11px 0 32px; color: var(--text-main); background: rgba(255,255,255,.52); outline: none; font: inherit; font-size: 11px; transition: border-color .18s, background .18s, box-shadow .18s; }
+        .history-search input:focus { border-color: rgba(82,111,202,.42); background: rgba(255,255,255,.82); box-shadow: 0 0 0 3px rgba(82,111,202,.07); }
+        .search-icon { position: absolute; top: 9px; left: 13px; color: #8993a3; font-size: 14px; pointer-events: none; }
+        .history-label { padding: 3px 8px 8px; color: #818b9b; font-size: 9px; font-weight: 650; letter-spacing: .11em; text-transform: uppercase; }
+        #session-list { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; scrollbar-width: thin; scrollbar-color: rgba(90,105,130,.22) transparent; }
+        .history-item { position: relative; display: flex; align-items: center; gap: 3px; min-height: 51px; padding: 5px; border: 1px solid transparent; border-radius: 12px; animation: itemEnter .24s ease both; transition: background .18s, border-color .18s, transform .18s; }
+        @keyframes itemEnter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .history-item:hover { background: rgba(255,255,255,.44); }
+        .history-item.active { border-color: rgba(82,111,202,.13); background: rgba(255,255,255,.74); box-shadow: inset 0 1px 0 rgba(255,255,255,.8); }
+        .history-open { flex: 1; min-width: 0; border: 0; padding: 4px 6px; text-align: left; color: var(--text-main); background: transparent; cursor: pointer; }
+        .history-title { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 580; }
+        .history-time { display: block; margin-top: 4px; color: #8791a0; font-size: 9px; }
+        .history-menu-button { width: 27px; height: 28px; border: 0; border-radius: 8px; color: #758093; background: transparent; font: inherit; font-size: 17px; opacity: 0; cursor: pointer; transition: opacity .16s, background .16s; }
+        .history-item:hover .history-menu-button, .history-item:focus-within .history-menu-button { opacity: 1; }
+        .history-menu-button:hover { background: rgba(98,112,135,.10); }
+        .history-menu { position: fixed; z-index: 1500; min-width: 142px; padding: 5px; border: 1px solid var(--glass-border); border-radius: 11px; color: var(--text-main); background: var(--popover-bg); box-shadow: 0 12px 28px var(--shadow-color); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); animation: menuEnter .14s ease both; }
+        @keyframes menuEnter { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .history-menu button { display: block; width: 100%; border: 0; border-radius: 7px; padding: 8px; text-align: left; color: var(--text-main); background: transparent; font: inherit; font-size: 11px; cursor: pointer; }
+        .history-menu button:hover { background: rgba(82,111,202,.08); }
+        .history-menu .delete-chat { color: #a34a57; }
+        .history-rename { width: 100%; border: 1px solid rgba(82,111,202,.38); border-radius: 7px; padding: 5px; outline: none; font: inherit; font-size: 11px; }
+        .history-empty { margin: 12px 7px; color: #7d8797; font-size: 11px; line-height: 1.5; }
+        .history-footnote { margin-top: auto; padding: 12px 8px 2px; color: #929baa; font-size: 9px; }
+        #sidebar { display: flex; flex-direction: column; overflow: hidden; }
+        #header {
+            min-height: 82px; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid rgba(92,107,129,.12); background: rgba(255,255,255,.16);
+        }
+        .header-actions { display: flex; align-items: center; gap: 8px; }
+        #theme-toggle { width: 34px; height: 34px; border: 1px solid var(--glass-border); border-radius: 10px; color: var(--text-main); background: var(--muted-fill); font: inherit; font-size: 15px; cursor: pointer; transition: background .18s, transform .18s; }
+        #theme-toggle:hover { background: var(--active-fill); transform: translateY(-1px); }
+        .brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
+        #history-toggle { display: none; width: 34px; height: 34px; border: 1px solid rgba(100,115,138,.18); border-radius: 10px; color: var(--text-main); background: rgba(255,255,255,.62); font: inherit; font-size: 16px; cursor: pointer; }
+        .brand-mark {
+            width: 40px; height: 40px; flex: 0 0 40px; display: grid; place-items: center; border-radius: 13px;
+            color: #fff; font-size: 19px; font-weight: 700; background: linear-gradient(145deg, #8097dc, #6379bd);
+            box-shadow: 0 5px 14px rgba(74,95,157,.20), inset 0 1px 0 rgba(255,255,255,.45);
+        }
+        #header h1 { margin: 0; font-size: 16px; letter-spacing: -.3px; font-weight: 650; white-space: nowrap; }
+        .eyebrow { margin: 4px 0 0; color: var(--text-secondary); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; }
+        #chat-container {
+            flex: 1; min-height: 0; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 12px;
+            scrollbar-width: thin; scrollbar-color: rgba(90,105,130,.25) transparent;
+        }
+        .message { max-width: 88%; padding: 12px 15px; border-radius: 16px; font-size: 13px; line-height: 1.55; animation: fadeIn .22s ease both; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .user { align-self: flex-end; color: var(--user-msg-text); background: var(--user-msg-bg); border-bottom-right-radius: 5px; box-shadow: 0 5px 14px rgba(82,111,202,.18); }
+        .bot { align-self: flex-start; color: var(--bot-msg-text); background: var(--bot-msg-bg); border: 1px solid var(--glass-border); border-bottom-left-radius: 5px; }
+        .error { align-self: flex-start; color: #8f3e49; background: rgba(255,238,240,.85); border: 1px solid rgba(174,79,94,.16); border-bottom-left-radius: 5px; }
+        .plan-message { white-space: pre-wrap; }
+        .plan-actions { display: flex; gap: 7px; margin-top: 10px; }
+        .plan-actions button { border: 1px solid rgba(82,111,202,.18); border-radius: 9px; padding: 7px 10px; color: var(--text-main); background: var(--muted-fill); font: inherit; font-size: 11px; cursor: pointer; }
+        .plan-actions .apply-plan { color: white; background: #647bc2; }
+        .revision-picker { position: absolute; z-index: 100; top: 14px; right: 14px; }
+        #input-area { display: flex; gap: 9px; align-items: center; padding: 15px; border-top: 1px solid rgba(92,107,129,.12); background: rgba(255,255,255,.18); }
+        #user-input {
+            min-width: 0; flex: 1; height: 44px; padding: 0 14px; border: 1px solid rgba(100,115,138,.18); border-radius: 13px;
+            outline: none; color: var(--text-main); background: rgba(255,255,255,.48); font: inherit; font-size: 13px; transition: .2s;
+        }
+        #user-input::placeholder { color: #8993a3; }
+        #user-input:focus { border-color: rgba(82,111,202,.48); background: rgba(255,255,255,.78); box-shadow: 0 0 0 3px rgba(82,111,202,.08); }
+        #send-btn {
+            height: 44px; padding: 0 17px; border: 1px solid rgba(255,255,255,.65); border-radius: 13px; color: #fff;
+            background: #647bc2; box-shadow: 0 5px 13px rgba(82,111,202,.18);
+            font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; transition: transform .18s, background .18s;
+        }
+        #send-btn:hover { transform: translateY(-1px); background: #566eB7; }
+        #send-btn:disabled { opacity: .55; cursor: wait; }
+        #viewer-container { overflow: hidden; }
+        .viewer-empty {
+            position: absolute; z-index: 2; inset: 0; display: grid; place-content: center; justify-items: center;
+            padding: 32px; text-align: center; pointer-events: none; transition: opacity .24s ease;
+        }
+        .viewer-empty-mark { display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: 14px; border-radius: 15px; background: rgba(82,111,202,.08); color: #647bc2; font-size: 23px; }
+        .viewer-empty strong { color: #344056; font-size: 15px; font-weight: 650; }
+        .viewer-empty span { margin-top: 6px; color: #7a8596; font-size: 13px; }
+        body[data-theme="dark"] .viewer-empty strong { color: #e2e9f4; }
+        body[data-theme="dark"] .viewer-empty span,
+        body[data-theme="dark"] .history-time,
+        body[data-theme="dark"] .history-footnote,
+        body[data-theme="dark"] .history-label { color: #9aa8bd; }
+        #canvas.diagram-ready + .viewer-empty { opacity: 0; }
+        #canvas.diagram-ready .djs-container { animation: diagramAppear .38s ease-out both; }
+        @keyframes diagramAppear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        #canvas {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            background-color: transparent; background-image: none; transition: background-color .3s ease;
+        }
+        #canvas.diagram-ready {
+            background-color: var(--canvas-fill);
+            background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1.15px);
+            background-size: 18px 18px; background-position: 9px 9px;
+        }
+        /* Keep diagram-js transparent so the dotted canvas can show through. */
+        #canvas .djs-container, #canvas .bjs-container { background: transparent !important; }
+        #canvas .djs-connection { stroke: #66748a !important; }
+        #canvas .djs-shape { stroke-width: 1.5px !important; }
+        #canvas .djs-shape[data-element-id^="Participant"] .djs-visual > rect,
+        #canvas .djs-shape[data-element-id^="pool_"] .djs-visual > rect { fill: rgba(255,255,255,.66) !important; stroke: #aab4c2 !important; }
+        #controls {
+            position: absolute; z-index: 100; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; align-items: center; gap: 6px;
+            max-width: calc(100% - 28px); padding: 7px; border: 1px solid rgba(255,255,255,.9); border-radius: 15px;
+            background: var(--control-fill); color: var(--text-main); box-shadow: 0 8px 28px rgba(42,53,72,.10), inset 0 1px 0 rgba(255,255,255,.9);
+            backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+        }
+        .btn-secondary {
+            min-height: 34px; padding: 0 11px; border: 1px solid transparent; border-radius: 10px; color: var(--text-main);
+            background: rgba(115,129,152,.08); font: inherit; font-size: 12px; font-weight: 550; white-space: nowrap; cursor: pointer; transition: .18s;
+        }
+        .btn-secondary:hover:not(:disabled) { border-color: rgba(96,112,138,.16); background: rgba(115,129,152,.14); }
+        .btn-secondary:disabled { opacity: .45; cursor: not-allowed; }
+        #download-btn { background: rgba(82,111,202,.11); border-color: rgba(82,111,202,.10); }
+        #loading-overlay { position: absolute; inset: 0; z-index: 1000; display: none; flex-direction: column; gap: 8px; align-items: center; justify-content: center; color: var(--text-secondary); background: var(--overlay-bg); backdrop-filter: blur(7px); animation: overlayIn .2s ease both; }
+        #loading-overlay[aria-hidden="false"] { display: flex; }
+        .loading-label { margin: 0; font-size: 13px; font-weight: 550; }
+        @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+        .dino-track { position: relative; width: 184px; height: 42px; overflow: hidden; }
+        .dino-ground { position: absolute; right: 0; bottom: 4px; left: 0; height: 1px; background: rgba(82,111,202,.22); }
+        .dino-ground::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 14px, rgba(82,111,202,.35) 14px 19px, transparent 19px 28px); animation: groundRun .5s linear infinite; }
+        .dino-runner { position: absolute; bottom: 4px; left: -34px; display: block; font-size: 29px; line-height: 1; filter: drop-shadow(0 3px 2px rgba(53,72,119,.22)); animation: dinoRun 1.35s linear infinite; will-change: transform; }
+        @keyframes dinoRun { 0% { transform: translateX(-2px) translateY(0) rotate(-3deg) scaleX(-1); } 12% { transform: translateX(24px) translateY(-4px) rotate(0) scaleX(-1); } 24% { transform: translateX(50px) translateY(0) rotate(3deg) scaleX(-1); } 36% { transform: translateX(76px) translateY(-4px) rotate(0) scaleX(-1); } 48% { transform: translateX(102px) translateY(0) rotate(-3deg) scaleX(-1); } 60% { transform: translateX(128px) translateY(-4px) rotate(0) scaleX(-1); } 72% { transform: translateX(154px) translateY(0) rotate(3deg) scaleX(-1); } 84% { transform: translateX(180px) translateY(-4px) rotate(0) scaleX(-1); } 100% { transform: translateX(220px) translateY(0) rotate(-3deg) scaleX(-1); } }
+        @keyframes groundRun { to { transform: translateX(-28px); } }
+        #history-scrim { display: none; }
+        .delete-dialog { width: min(390px, calc(100vw - 36px)); border: 1px solid var(--glass-border); border-radius: 20px; padding: 0; color: var(--text-main); background: var(--dialog-bg); box-shadow: 0 24px 70px var(--shadow-color); backdrop-filter: blur(22px); animation: dialogIn .2s ease both; }
+        .delete-dialog::backdrop { background: rgba(35,43,57,.22); backdrop-filter: blur(3px); }
+        @keyframes dialogIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .delete-dialog-content { padding: 23px; }
+        .delete-dialog-mark { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 12px; color: #a34a57; background: rgba(174,79,94,.09); font-size: 20px; }
+        .delete-dialog h2 { margin: 15px 0 6px; font-size: 16px; }
+        .delete-dialog p { margin: 0; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+        .delete-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+        .delete-dialog-actions button { border: 1px solid rgba(100,115,138,.16); border-radius: 9px; padding: 9px 12px; color: var(--text-main); background: var(--muted-fill); font: inherit; font-size: 11px; cursor: pointer; }
+        .delete-dialog-actions #confirm-delete { border-color: transparent; color: white; background: #a65360; }
+        button:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 3px; }
+        body[data-theme="dark"] #new-session,
+        body[data-theme="dark"] .history-search input,
+        body[data-theme="dark"] #history-toggle,
+        body[data-theme="dark"] #user-input,
+        body[data-theme="dark"] #user-input:focus { color: var(--text-main); background: var(--muted-fill); }
+        body[data-theme="dark"] .history-item.active { border-color: rgba(133,158,221,.25); background: var(--active-fill); box-shadow: inset 0 1px 0 rgba(255,255,255,.06); }
+        body[data-theme="dark"] .history-item:hover { background: var(--hover-fill); }
+        body[data-theme="dark"] #header,
+        body[data-theme="dark"] #input-area { border-color: var(--line-color); background: rgba(255,255,255,.025); }
+        body[data-theme="dark"] #canvas .djs-shape[data-element-id^="Participant"] .djs-visual > rect,
+        body[data-theme="dark"] #canvas .djs-shape[data-element-id^="pool_"] .djs-visual > rect { fill: rgba(37,45,60,.82) !important; stroke: #64728a !important; }
+        body[data-theme="dark"] #canvas .djs-connection { stroke: #a9b8d0 !important; }
+        body[data-theme="dark"] #revision-select { color: var(--text-main); border-color: var(--glass-border); background: var(--glass-strong); }
+        body[data-theme="dark"] #revision-select option { color: var(--text-main); background: #232a39; }
+        body[data-theme="dark"] .error { color: #ffc2c9; border-color: rgba(220,112,130,.28); background: rgba(115,41,55,.46); }
+        body[data-theme="dark"] .delete-dialog::backdrop { background: rgba(4,7,13,.58); }
+        @media (max-width: 1100px) {
+            .app-container { grid-template-columns: minmax(210px, 235px) minmax(300px, 350px) minmax(0, 1fr); gap: 10px; padding: 12px; }
+            #header { padding: 16px; }
+        }
+        @media (max-width: 900px) {
+            .app-container { grid-template-columns: minmax(280px, 38vw) minmax(0, 1fr); gap: 12px; padding: 12px; }
+            #history-sidebar { position: fixed; z-index: 600; top: 12px; bottom: 12px; left: 12px; width: min(280px, calc(100vw - 32px)); transform: translateX(calc(-100% - 18px)); opacity: .5; transition: transform .28s cubic-bezier(.2,.75,.2,1), opacity .22s ease; }
+            body.history-open #history-sidebar { transform: translateX(0); opacity: 1; }
+            body.history-open #history-scrim { display: block; position: fixed; z-index: 550; inset: 0; background: rgba(36,45,60,.18); backdrop-filter: blur(2px); animation: overlayIn .2s ease both; }
+            #history-toggle { display: inline-grid; place-items: center; }
+            #header { padding: 16px; }
+            #controls { gap: 4px; bottom: 13px; }
+            .btn-secondary { padding: 0 8px; font-size: 11px; }
+        }
+        @media (max-width: 640px) {
+            html, body { overflow: auto; }
+            .app-container { width: 100%; height: auto; min-height: 100vh; grid-template-columns: 1fr; grid-template-rows: minmax(360px, 48vh) minmax(52vh, 1fr); gap: 12px; padding: 12px; }
+            #sidebar { min-height: 360px; }
+            #header { min-height: 72px; }
+            #chat-container { padding: 15px; }
+            #viewer-container { min-height: 52vh; }
+            #controls { left: 10px; right: 10px; bottom: 10px; transform: none; max-width: none; justify-content: center; }
+            .btn-secondary { flex: 1; min-width: 0; padding: 0 5px; font-size: 10px; }
+        }
+        @media (hover: none) {
+            .history-menu-button { opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+        }
+        @media (prefers-reduced-transparency: reduce) {
+            #sidebar, #viewer-container, #controls { background: var(--glass-strong); backdrop-filter: none; -webkit-backdrop-filter: none; }
+        }
     </style>
 </head>
-<body>
-    <div id="sidebar">
-        <div id="chat-container">
-            <div class="message bot">Hello! Describe your business process, and I'll generate a BPMN diagram for you.</div>
+<body data-theme="light">
+    <div class="app-container">
+        <aside id="history-sidebar" aria-label="Chat history">
+            <div class="history-heading">
+                <h2>Chats</h2>
+                <button id="new-session" type="button">+ New chat</button>
+            </div>
+            <label class="history-search">
+                <span class="search-icon" aria-hidden="true">⌕</span>
+                <input id="chat-search" type="search" placeholder="Search chats…" autocomplete="off" aria-label="Search chats">
+            </label>
+            <div class="history-label">Your conversations</div>
+            <nav id="session-list" aria-label="Saved chats"></nav>
+            <div class="history-footnote">Saved locally on this device</div>
+        </aside>
+        <div id="history-scrim" aria-hidden="true"></div>
+        <div id="sidebar">
+            <div id="header">
+                <div class="brand">
+                    <button id="history-toggle" type="button" title="Open chat history" aria-label="Open chat history">☰</button>
+                    <div class="brand-mark" aria-hidden="true">✦</div>
+                    <div>
+                        <h1>BPMN Architect</h1>
+                        <p class="eyebrow">AI process studio</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme">☾</button>
+                </div>
+            </div>
+            <div id="chat-container">
+                <div class="message bot">Hello! Describe your business process, and I'll architect a BPMN diagram for you. ✨</div>
+            </div>
+            <div id="input-area">
+                <input type="text" id="user-input" placeholder="e.g. Customer orders a pizza...">
+                <button id="send-btn">Send</button>
+            </div>
         </div>
-        <div id="input-area">
-            <input type="text" id="user-input" placeholder="Enter process description...">
-            <button id="send-btn">Send</button>
+        <div id="viewer-container">
+            <div class="revision-picker"><select id="revision-select" aria-label="Diagram version history"><option value="">No saved versions</option></select></div>
+            <div id="loading-overlay" aria-hidden="true" role="status" aria-live="polite">
+                <div class="dino-track" aria-hidden="true">
+                    <span class="dino-runner">🦖</span>
+                    <span class="dino-ground"></span>
+                </div>
+                <p class="loading-label">Building your diagram…</p>
+            </div>
+            <div id="controls" aria-label="Diagram controls">
+                <button class="btn-secondary" id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">Zoom +</button>
+                <button class="btn-secondary" id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">Zoom −</button>
+                <button class="btn-secondary" id="center-btn" type="button" title="Fit diagram to view">Fit</button>
+                <button class="btn-secondary" id="download-btn" type="button" disabled>Download BPMN</button>
+            </div>
+            <div id="canvas"></div>
+            <div class="viewer-empty" id="empty-state" aria-live="polite">
+                <div class="viewer-empty-mark" aria-hidden="true">◇</div>
+                <strong>Your diagram will appear here</strong>
+                <span>Describe a business process to get started</span>
+            </div>
         </div>
     </div>
-    <div id="viewer-container">
-        <div id="loading-overlay">Generating Diagram...</div>
-        <div id="controls">
-            <button class="btn-secondary" id="download-btn">Download .bpmn</button>
+    <dialog id="delete-dialog" class="delete-dialog">
+        <div class="delete-dialog-content">
+            <div class="delete-dialog-mark" aria-hidden="true">⌫</div>
+            <h2>Delete this chat?</h2>
+            <p id="delete-dialog-message">This will permanently remove the conversation and all saved diagram versions.</p>
+            <div class="delete-dialog-actions">
+                <button id="cancel-delete" type="button">Cancel</button>
+                <button id="confirm-delete" type="button">Delete chat</button>
+            </div>
         </div>
-        <div id="canvas"></div>
-    </div>
+    </dialog>
 
-    <!-- BPMN-js Library -->
     <script src="https://unpkg.com/bpmn-js@17.11.1/dist/bpmn-modeler.production.min.js"></script>
     <script>
         const bpmnModeler = new BpmnJS({ container: '#canvas' });
-        let currentXml = "";
+        const chatContainer = document.getElementById('chat-container');
+        const loading = document.getElementById('loading-overlay');
+        const downloadButton = document.getElementById('download-btn');
+        const sessionList = document.getElementById('session-list');
+        const revisionSelect = document.getElementById('revision-select');
+        const deleteDialog = document.getElementById('delete-dialog');
+        const SESSION_KEY = 'bpmn-architect-session';
+        const THEME_KEY = 'bpmn-architect-theme';
+        let sessionId = localStorage.getItem(SESSION_KEY);
+        let currentRevisionId = null;
+        let deleteTargetId = null;
 
-        async function sendMessage() {
-            const input = document.getElementById('user-input');
-            const btn = document.getElementById('send-btn');
-            const chat = document.getElementById('chat-container');
-            const loading = document.getElementById('loading-overlay');
-            const text = input.value.trim();
+        function setTheme(theme) {
+            const isDark = theme === 'dark';
+            document.body.dataset.theme = isDark ? 'dark' : 'light';
+            localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
+            const toggle = document.getElementById('theme-toggle');
+            toggle.textContent = isDark ? '☀' : '☾';
+            toggle.title = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+            toggle.setAttribute('aria-label', toggle.title);
+        }
 
-            if (!text) return;
+        setTheme(localStorage.getItem(THEME_KEY) || 'light');
 
-            // Add user message
-            chat.innerHTML += `<div class="message user">${text}</div>`;
-            input.value = '';
-            btn.disabled = true;
-            loading.style.display = 'flex';
-
+        async function api(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+            });
+            const raw = await response.text();
+            let data;
             try {
-                const response = await fetch('/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: text })
+                data = raw ? JSON.parse(raw) : {};
+            } catch {
+                data = { detail: raw.trim() || `Server returned a non-JSON response (${response.status}).` };
+            }
+            if (!response.ok) {
+                const detail = data.detail || `Request failed (${response.status}).`;
+                const error = new Error(typeof detail === 'string' ? detail : `Request failed (${response.status}).`);
+                error.status = response.status;
+                throw error;
+            }
+            if (!raw || typeof data !== 'object') throw new Error('The server returned an unexpected response.');
+            return data;
+        }
+
+        function appendMessage(kind, text, planId = null, canApply = false) {
+            const message = document.createElement('div');
+            message.className = `message ${kind}${planId ? ' plan-message' : ''}`;
+            message.textContent = text;
+            if (planId && canApply) {
+                const actions = document.createElement('div');
+                actions.className = 'plan-actions';
+                const apply = document.createElement('button');
+                apply.className = 'apply-plan';
+                apply.textContent = 'Apply plan';
+                apply.addEventListener('click', () => applyPlan(planId, apply));
+                const discard = document.createElement('button');
+                discard.textContent = 'Discard';
+                discard.addEventListener('click', async () => {
+                    await api(`/sessions/${sessionId}/plans/${planId}/discard`, { method: 'POST' });
+                    actions.remove();
                 });
+                actions.append(apply, discard);
+                message.appendChild(actions);
+            }
+            chatContainer.appendChild(message);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return message;
+        }
 
-                const data = await response.json();
+        function showDiagram(xml) {
+            return bpmnModeler.importXML(xml).then(() => {
+                document.getElementById('canvas').classList.add('diagram-ready');
+                downloadButton.disabled = !currentRevisionId;
+                requestAnimationFrame(() => bpmnModeler.get('canvas').fitToScreen());
+            });
+        }
 
-                if (data.success) {
-                    // Render XML in bpmn-js
-                    await bpmnModeler.importXML(data.xml);
-                    chat.innerHTML += `<div class="message bot">Diagram generated successfully!</div>`;
-                } else {
-                    chat.innerHTML += `<div class="message bot" style="color: red;">Error: ${data.detail || 'Generation failed'}</div>`;
-                }
-            } catch (e) {
-                chat.innerHTML += `<div class="message bot" style="color: red;">Connection error. Is the server running?</div>`;
-            } finally {
-                btn.disabled = false;
-                loading.style.display = 'none';
-                chat.scrollTop = chat.scrollHeight;
+        function timeGroup(value) {
+            const date = new Date(value);
+            const today = new Date();
+            const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const age = midnight - new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            if (age === 0) return 'Today';
+            if (age === 86_400_000) return 'Yesterday';
+            if (age > 0 && age < 7 * 86_400_000) return 'Previous 7 days';
+            return 'Older';
+        }
+
+        async function refreshSessionList() {
+            const result = await api('/sessions');
+            const query = document.getElementById('chat-search').value.trim().toLowerCase();
+            const visible = result.sessions.filter(session => !query || session.title.toLowerCase().includes(query));
+            sessionList.replaceChildren();
+            if (!visible.length) {
+                const empty = document.createElement('p');
+                empty.className = 'history-empty';
+                empty.textContent = query ? 'No chats match your search.' : 'Your saved chats will appear here.';
+                sessionList.appendChild(empty);
+                return;
+            }
+            const groups = new Map();
+            for (const session of visible) {
+                const label = timeGroup(session.updated_at);
+                if (!groups.has(label)) groups.set(label, []);
+                groups.get(label).push(session);
+            }
+            for (const label of ['Today', 'Yesterday', 'Previous 7 days', 'Older']) {
+                if (!groups.has(label)) continue;
+                const sectionLabel = document.createElement('div');
+                sectionLabel.className = 'history-label';
+                sectionLabel.textContent = label;
+                sessionList.appendChild(sectionLabel);
+                for (const session of groups.get(label)) sessionList.appendChild(createSessionItem(session));
             }
         }
 
-        document.getElementById('send-btn').onclick = sendMessage;
-        document.getElementById('user-input').onkeypress = (e) => { if (e.key === 'Enter') sendMessage(); };
-        document.getElementById('download-btn').onclick = () => {
-            window.location.href = '/download';
-        };
+        function createSessionItem(session) {
+            const item = document.createElement('div');
+            item.className = `history-item${session.id === sessionId ? ' active' : ''}`;
+            const open = document.createElement('button');
+            open.className = 'history-open';
+            open.type = 'button';
+            open.addEventListener('click', async () => {
+                sessionId = session.id;
+                localStorage.setItem(SESSION_KEY, sessionId);
+                document.body.classList.remove('history-open');
+                await loadSession();
+            });
+            const title = document.createElement('span');
+            title.className = 'history-title';
+            title.textContent = session.title || 'Untitled chat';
+            const time = document.createElement('span');
+            time.className = 'history-time';
+            time.textContent = new Date(session.updated_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            open.append(title, time);
+            const menuButton = document.createElement('button');
+            menuButton.className = 'history-menu-button';
+            menuButton.type = 'button';
+            menuButton.textContent = '···';
+            menuButton.setAttribute('aria-label', `Actions for ${session.title}`);
+            menuButton.addEventListener('click', event => {
+                event.stopPropagation();
+                const existing = document.querySelector('.history-menu');
+                if (existing) { existing.remove(); return; }
+                document.querySelectorAll('.history-menu').forEach(menu => menu.remove());
+                const menu = document.createElement('div');
+                menu.className = 'history-menu';
+                menu.setAttribute('role', 'menu');
+                const anchor = menuButton.getBoundingClientRect();
+                const menuWidth = 142;
+                const menuHeight = 76;
+                menu.style.left = `${Math.max(8, Math.min(anchor.right - menuWidth, window.innerWidth - menuWidth - 8))}px`;
+                menu.style.top = `${anchor.bottom + menuHeight + 8 <= window.innerHeight ? anchor.bottom + 5 : Math.max(8, anchor.top - menuHeight - 5)}px`;
+                const rename = document.createElement('button');
+                rename.type = 'button';
+                rename.textContent = 'Rename';
+                rename.addEventListener('click', () => {
+                    menu.remove();
+                    startRename(session, title);
+                });
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'delete-chat';
+                remove.textContent = 'Delete';
+                remove.addEventListener('click', () => {
+                    menu.remove();
+                    deleteTargetId = session.id;
+                    document.getElementById('delete-dialog-message').textContent = 'This will permanently remove the conversation and all saved diagram versions.';
+                    deleteDialog.showModal();
+                });
+                menu.append(rename, remove);
+                document.body.appendChild(menu);
+                requestAnimationFrame(() => {
+                    const bounds = menu.getBoundingClientRect();
+                    if (bounds.bottom > window.innerHeight - 8) menu.style.top = `${Math.max(8, anchor.top - bounds.height - 5)}px`;
+                });
+            });
+            item.append(open, menuButton);
+            return item;
+        }
+
+        function startRename(session, titleElement) {
+            const input = document.createElement('input');
+            input.className = 'history-rename';
+            input.value = session.title;
+            input.setAttribute('aria-label', 'New chat title');
+            titleElement.replaceWith(input);
+            input.focus();
+            input.select();
+            let finished = false;
+            const finish = async save => {
+                if (finished) return;
+                finished = true;
+                const nextTitle = input.value.trim();
+                if (save && nextTitle && nextTitle !== session.title) {
+                    try {
+                        await api(`/sessions/${session.id}`, { method: 'PATCH', body: JSON.stringify({ title: nextTitle }) });
+                    } catch (error) {
+                        appendMessage('error', error.message);
+                    }
+                }
+                await refreshSessionList();
+            };
+            input.addEventListener('keydown', event => {
+                if (event.key === 'Enter') { event.preventDefault(); finish(true); }
+                if (event.key === 'Escape') finish(false);
+            });
+            input.addEventListener('blur', () => finish(true));
+        }
+
+        async function loadSession() {
+            const data = await api(`/sessions/${sessionId}`);
+            chatContainer.replaceChildren();
+            if (!data.messages.length) {
+                appendMessage('bot', 'Describe a process or request a change. I will propose a plan before editing the diagram.');
+            } else {
+                const pending = new Map(data.plans.filter(plan => plan.status === 'pending').map(plan => [plan.id, plan.plan_text]));
+                for (const message of data.messages) {
+                    const showPlanActions = message.role === 'assistant' && message.plan_id && pending.get(message.plan_id) === message.content;
+                    appendMessage(message.role === 'assistant' ? 'bot' : message.role, message.content, showPlanActions ? message.plan_id : null, showPlanActions);
+                }
+            }
+            currentRevisionId = data.current_revision?.id || null;
+            revisionSelect.replaceChildren();
+            if (!data.revisions.length) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No saved versions';
+                revisionSelect.appendChild(option);
+            } else {
+                for (const revision of data.revisions) {
+                    const option = document.createElement('option');
+                    option.value = revision.id;
+                    option.textContent = `${revision.id.slice(0, 8)} · ${revision.request_text.slice(0, 28)}`;
+                    revisionSelect.appendChild(option);
+                }
+                revisionSelect.value = currentRevisionId;
+            }
+            if (data.current_revision) await showDiagram(data.current_revision.xml);
+            else {
+                document.getElementById('canvas').classList.remove('diagram-ready');
+                downloadButton.disabled = true;
+            }
+            await refreshSessionList();
+        }
+
+        async function initialize() {
+            try {
+                const sessions = await api('/sessions');
+                if (!sessionId || !sessions.sessions.some(item => item.id === sessionId)) {
+                    const created = await api('/sessions', { method: 'POST' });
+                    sessionId = created.session_id;
+                    localStorage.setItem(SESSION_KEY, sessionId);
+                }
+                await loadSession();
+            } catch (error) {
+                appendMessage('error', error.message || 'Could not load saved sessions.');
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('user-input');
+            const button = document.getElementById('send-btn');
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            button.disabled = true;
+            loading.setAttribute('aria-hidden', 'false');
+            try {
+                const result = await api(`/sessions/${sessionId}/plan`, {
+                    method: 'POST', body: JSON.stringify({ text })
+                });
+                appendMessage('user', text);
+                appendMessage('bot', result.plan, result.plan_id, result.status === 'pending');
+                if (result.status === 'stale') appendMessage('bot', 'The diagram changed while this plan was being prepared. Please request a fresh plan.');
+            } catch (error) {
+                appendMessage('user', text);
+                appendMessage('error', error.message || 'Could not create a change plan.');
+            } finally {
+                button.disabled = false;
+                loading.setAttribute('aria-hidden', 'true');
+            }
+        }
+
+        async function applyPlan(planId, button) {
+            button.disabled = true;
+            loading.setAttribute('aria-hidden', 'false');
+            try {
+                const result = await api(`/sessions/${sessionId}/apply`, {
+                    method: 'POST', body: JSON.stringify({ plan_id: planId })
+                });
+                currentRevisionId = result.revision_id;
+                await showDiagram(result.xml);
+                appendMessage('bot', `Changes saved as version ${result.revision_id.slice(0, 8)}.`);
+                await loadSession();
+            } catch (error) {
+                appendMessage('error', error.message || 'Could not apply this plan.');
+                if (error.status === 409) await loadSession();
+                button.disabled = false;
+            } finally {
+                loading.setAttribute('aria-hidden', 'true');
+            }
+        }
+
+        document.getElementById('send-btn').addEventListener('click', sendMessage);
+        document.getElementById('user-input').addEventListener('keydown', event => {
+            if (event.key === 'Enter') sendMessage();
+        });
+        document.getElementById('new-session').addEventListener('click', async () => {
+            const result = await api('/sessions', { method: 'POST' });
+            sessionId = result.session_id;
+            localStorage.setItem(SESSION_KEY, sessionId);
+            document.body.classList.remove('history-open');
+            await loadSession();
+        });
+        document.getElementById('chat-search').addEventListener('input', refreshSessionList);
+        document.getElementById('history-toggle').addEventListener('click', () => document.body.classList.add('history-open'));
+        document.getElementById('history-scrim').addEventListener('click', () => document.body.classList.remove('history-open'));
+        document.getElementById('cancel-delete').addEventListener('click', () => deleteDialog.close());
+        deleteDialog.addEventListener('close', () => { deleteTargetId = null; });
+        document.addEventListener('click', event => {
+            if (!event.target.closest('.history-menu') && !event.target.closest('.history-menu-button')) {
+                document.querySelector('.history-menu')?.remove();
+            }
+        });
+        window.addEventListener('resize', () => document.querySelector('.history-menu')?.remove());
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            setTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark');
+        });
+        document.getElementById('confirm-delete').addEventListener('click', async () => {
+            const button = document.getElementById('confirm-delete');
+            if (!deleteTargetId) return;
+            const targetId = deleteTargetId;
+            button.disabled = true;
+            try {
+                await api(`/sessions/${targetId}`, { method: 'DELETE' });
+                deleteDialog.close();
+                if (targetId === sessionId) {
+                    const created = await api('/sessions', { method: 'POST' });
+                    sessionId = created.session_id;
+                    localStorage.setItem(SESSION_KEY, sessionId);
+                    await loadSession();
+                } else {
+                    await refreshSessionList();
+                }
+            } catch (error) {
+                const message = error.message || 'Could not delete this chat. Please try again.';
+                if (deleteDialog.open) document.getElementById('delete-dialog-message').textContent = message;
+                else appendMessage('error', message);
+            } finally {
+                button.disabled = false;
+            }
+        });
+        revisionSelect.addEventListener('change', async () => {
+            if (!revisionSelect.value || revisionSelect.value === currentRevisionId) return;
+            try {
+                await api(`/sessions/${sessionId}/restore/${revisionSelect.value}`, { method: 'POST' });
+                await loadSession();
+            } catch (error) {
+                appendMessage('error', error.message);
+            }
+        });
+        downloadButton.addEventListener('click', () => {
+            if (currentRevisionId) window.location.href = `/sessions/${sessionId}/revisions/${currentRevisionId}/download`;
+        });
+        document.getElementById('zoom-in').onclick = () => bpmnModeler.get('canvas').zoom(1.2);
+        document.getElementById('zoom-out').onclick = () => bpmnModeler.get('canvas').zoom(0.8);
+        document.getElementById('center-btn').onclick = () => bpmnModeler.get('canvas').fitToScreen();
+        initialize();
     </script>
 </body>
 </html>
