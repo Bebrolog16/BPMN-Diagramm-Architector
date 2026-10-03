@@ -42,6 +42,7 @@ class TestWebWorkflow(unittest.TestCase):
         storage.DATABASE_FILE = str(Path(self.temp_dir.name) / "history.sqlite3")
         web_app.GENERATED_DIR = str(Path(self.temp_dir.name) / "generated")
         storage.init_storage()
+        self.user = storage.create_user("workflow", "workflow-password", "Workflow")
 
     def tearDown(self):
         storage.DATABASE_FILE = self.old_database
@@ -50,52 +51,53 @@ class TestWebWorkflow(unittest.TestCase):
 
     @patch("web.app.OllamaBPMNClient", FakeOllama)
     def test_plan_approval_creates_and_restores_a_persistent_revision(self):
-        session = web_app.create_session()
+        session = web_app.create_session(user=self.user)
         session_id = session["session_id"]
-        plan = web_app.plan_change(session_id, web_app.TextRequest(text="Add review"))
-        applied = web_app.apply_plan(session_id, web_app.ApplyRequest(plan_id=plan["plan_id"]))
+        plan = web_app.plan_change(session_id, web_app.TextRequest(text="Add review"), user=self.user)
+        applied = web_app.apply_plan(session_id, web_app.ApplyRequest(plan_id=plan["plan_id"]), user=self.user)
 
         self.assertIn("BPMNDiagram", applied["xml"])
         self.assertEqual(storage.get_session(session_id)["current_revision_id"], applied["revision_id"])
-        history = web_app.read_session(session_id)
+        history = web_app.read_session(session_id, user=self.user)
         self.assertEqual(len(history["revisions"]), 1)
         self.assertEqual(history["plans"][0]["status"], "applied")
-        restored = web_app.restore_revision(session_id, applied["revision_id"])
+        restored = web_app.restore_revision(session_id, applied["revision_id"], user=self.user)
         self.assertEqual(restored["revision"]["id"], applied["revision_id"])
 
     def test_cannot_read_another_sessions_revision(self):
-        first = web_app.create_session()["session_id"]
-        second = web_app.create_session()["session_id"]
+        first = web_app.create_session(user=self.user)["session_id"]
+        second = web_app.create_session(user=self.user)["session_id"]
         with self.assertRaises(web_app.HTTPException) as error:
-            web_app.download_revision(first, "a" * 32)
+            web_app.download_revision(first, "a" * 32, user=self.user)
         self.assertEqual(error.exception.status_code, 404)
         self.assertNotEqual(first, second)
 
     def test_rename_and_delete_session_api_operations(self):
-        session_id = web_app.create_session()["session_id"]
+        session_id = web_app.create_session(user=self.user)["session_id"]
         renamed = web_app.rename_chat(
             session_id,
             web_app.RenameSessionRequest(title="Quarterly approval flow"),
+            user=self.user,
         )
         self.assertEqual(renamed["session"]["title"], "Quarterly approval flow")
-        deleted = web_app.delete_chat(session_id)
+        deleted = web_app.delete_chat(session_id, user=self.user)
         self.assertTrue(deleted["ok"])
         with self.assertRaises(web_app.HTTPException) as error:
-            web_app.read_session(session_id)
+            web_app.read_session(session_id, user=self.user)
         self.assertEqual(error.exception.status_code, 404)
 
     @patch("web.app.OllamaBPMNClient", FakeOllama)
     def test_plan_based_on_old_version_cannot_overwrite_newer_revision(self):
-        session_id = web_app.create_session()["session_id"]
-        first = web_app.plan_change(session_id, web_app.TextRequest(text="Create the first version"))
-        stale = web_app.plan_change(session_id, web_app.TextRequest(text="Add a second detail"))
-        web_app.apply_plan(session_id, web_app.ApplyRequest(plan_id=first["plan_id"]))
+        session_id = web_app.create_session(user=self.user)["session_id"]
+        first = web_app.plan_change(session_id, web_app.TextRequest(text="Create the first version"), user=self.user)
+        stale = web_app.plan_change(session_id, web_app.TextRequest(text="Add a second detail"), user=self.user)
+        web_app.apply_plan(session_id, web_app.ApplyRequest(plan_id=first["plan_id"]), user=self.user)
 
-        plans = web_app.read_session(session_id)["plans"]
+        plans = web_app.read_session(session_id, user=self.user)["plans"]
         stale_record = next(plan for plan in plans if plan["id"] == stale["plan_id"])
         self.assertEqual(stale_record["status"], "stale")
         with self.assertRaises(web_app.HTTPException) as error:
-            web_app.apply_plan(session_id, web_app.ApplyRequest(plan_id=stale["plan_id"]))
+            web_app.apply_plan(session_id, web_app.ApplyRequest(plan_id=stale["plan_id"]), user=self.user)
         self.assertEqual(error.exception.status_code, 409)
 
 

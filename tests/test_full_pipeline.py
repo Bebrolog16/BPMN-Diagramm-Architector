@@ -62,6 +62,28 @@ class TestBPMNSystem(unittest.TestCase):
             lane_nodes = [n for n in self.sdk.graph.nodes.values() if n.parent_id == lane_id]
             self.assertTrue(all(n.coords[1] >= y and n.coords[1] + n.height <= y + height for n in lane_nodes))
 
+    def test_parallel_gateway_branches_use_separate_route_tracks(self):
+        gateway = self.sdk.add_parallel_gateway("Split", self.sdk.ROOT_PROCESS_ID)
+        tasks = [
+            self.sdk.add_task(f"Branch {index}", self.sdk.ROOT_PROCESS_ID)
+            for index in range(4)
+        ]
+        self.sdk.add_link(self.sdk.ROOT_START_TASK_ID, gateway)
+        for task in tasks:
+            self.sdk.add_link(gateway, task)
+
+        LayoutEngine(self.sdk.graph).calculate_layout()
+        exporter = BPMNExporter(self.sdk.graph)
+        routes = [
+            exporter._route_edge(edge, index)
+            for index, edge in enumerate(self.sdk.graph.edges)
+            if edge.source == gateway
+        ]
+        route_tracks = [route[1][0] for route in routes]
+
+        self.assertEqual(len(routes), 4)
+        self.assertEqual(len(set(route_tracks)), 4)
+
     def test_export_has_participant_and_lane_shapes_and_typed_flows(self):
         _, customer_lanes = self.sdk.add_pool(self.sdk.ROOT_PROCESS_ID, ["Customer"], name="Customer")
         _, store_lanes = self.sdk.add_pool(self.sdk.ROOT_PROCESS_ID, ["Manager", "Warehouse"], name="Store")

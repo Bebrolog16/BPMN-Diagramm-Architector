@@ -1,7 +1,11 @@
 """Local SQLite persistence for sessions, plans, messages, and diagram revisions."""
 
 import os
+import hashlib
+import hmac
+import secrets
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timezone
 
 from core.config import DATABASE_FILE
@@ -15,6 +19,7 @@ def _now():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+@contextmanager
 def _connect():
     os.makedirs(os.path.dirname(DATABASE_FILE), exist_ok=True)
     connection = sqlite3.connect(DATABASE_FILE, timeout=10)
@@ -22,15 +27,39 @@ def _connect():
     connection.execute("PRAGMA foreign_keys = ON")
     connection.execute("PRAGMA journal_mode = WAL")
     connection.execute("PRAGMA busy_timeout = 10000")
-    return connection
+    try:
+        yield connection
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
 
 
 def init_storage():
     with _connect() as connection:
         connection.executescript(
             """
+            CREATE TABLE IF NOT EXISTS users (
+                id TEXT PRIMARY KEY,
+                login TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                nickname TEXT NOT NULL,
+                password_hash TEXT NOT NULL,
+                avatar_mime TEXT,
+                avatar_data BLOB,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS auth_sessions (
+                token_hash TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL
+            );
             CREATE TABLE IF NOT EXISTS sessions (
                 id TEXT PRIMARY KEY,
+                user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
                 title TEXT NOT NULL,
                 current_revision_id TEXT,
                 created_at TEXT NOT NULL,
@@ -70,9 +99,153 @@ def init_storage():
                 ON revisions(session_id, created_at);
             CREATE INDEX IF NOT EXISTS plans_session_order
                 ON plans(session_id, created_at);
+            CREATE INDEX IF NOT EXISTS auth_sessions_user ON auth_sessions(user_id);
             """
         )
+        session_columns = {
+            row["name"] for row in connection.execute("PRAGMA table_info(sessions)")
+        }
+        if "user_id" not in session_columns:
+            connection.execute(
+                "ALTER TABLE sessions ADD COLUMN user_id TEXT REFERENCES users(id) ON DELETE CASCADE"
+            )
         _migrate_plan_status_check(connection)
+
+
+PASSWORD_ITERATIONS = 310_000
+
+
+def _hash_password(password):
+    salt = secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, PASSWORD_ITERATIONS)
+    return f"pbkdf2_sha256${PASSWORD_ITERATIONS}${salt.hex()}${digest.hex()}"
+
+
+def _password_matches(password, encoded):
+    try:
+        algorithm, iterations, salt_hex, expected_hex = encoded.split("$", 3)
+        if algorithm != "pbkdf2_sha256":
+            return False
+        digest = hashlib.pbkdf2_hmac(
+            "sha256", password.encode("utf-8"), bytes.fromhex(salt_hex), int(iterations)
+        )
+        return hmac.compare_digest(digest.hex(), expected_hex)
+    except (AttributeError, TypeError, ValueError):
+        return False
+
+
+def create_user(login, password, nickname):
+    now = _now()
+    user_id = secrets.token_hex(16)
+    password_hash = _hash_password(password)
+    with _connect() as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        is_first_user = connection.execute("SELECT 1 FROM users LIMIT 1").fetchone() is None
+        connection.execute(
+            "INSERT INTO users(id, login, nickname, password_hash, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (user_id, login, nickname, password_hash, now, now),
+        )
+        if is_first_user:
+            # Existing single-user chat history belongs to the initial local account.
+            connection.execute("UPDATE sessions SET user_id = ? WHERE user_id IS NULL", (user_id,))
+    return get_user(user_id)
+
+
+def get_user(user_id):
+    with _connect() as connection:
+        row = connection.execute(
+            "SELECT id, login, nickname, avatar_mime, avatar_data, created_at, updated_at "
+            "FROM users WHERE id = ?", (user_id,)
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def get_user_by_login(login):
+    with _connect() as connection:
+        row = connection.execute("SELECT * FROM users WHERE login = ? COLLATE NOCASE", (login,)).fetchone()
+    return dict(row) if row else None
+
+
+def verify_user_password(login, password):
+    user = get_user_by_login(login)
+    if not user:
+        # Keep the unknown-login path close to the normal password-check cost.
+        _password_matches(password, "pbkdf2_sha256$310000$" + ("00" * 16) + "$" + ("00" * 32))
+        return None
+    return user if _password_matches(password, user["password_hash"]) else None
+
+
+def create_auth_session(user_id, token_hash, expires_at):
+    now = _now()
+    with _connect() as connection:
+        connection.execute("DELETE FROM auth_sessions WHERE expires_at <= ?", (now,))
+        connection.execute(
+            "INSERT INTO auth_sessions(token_hash, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)",
+            (token_hash, user_id, now, expires_at),
+        )
+
+
+def get_user_for_auth_token(token_hash):
+    now = _now()
+    with _connect() as connection:
+        row = connection.execute(
+            "SELECT u.id, u.login, u.nickname, u.avatar_mime, u.avatar_data, u.created_at, u.updated_at "
+            "FROM auth_sessions a JOIN users u ON u.id = a.user_id "
+            "WHERE a.token_hash = ? AND a.expires_at > ?",
+            (token_hash, now),
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def delete_auth_session(token_hash):
+    with _connect() as connection:
+        connection.execute("DELETE FROM auth_sessions WHERE token_hash = ?", (token_hash,))
+
+
+def update_user_profile(user_id, nickname):
+    with _connect() as connection:
+        connection.execute(
+            "UPDATE users SET nickname = ?, updated_at = ? WHERE id = ?",
+            (nickname, _now(), user_id),
+        )
+    return get_user(user_id)
+
+
+def update_user_avatar(user_id, mime_type, image_data):
+    with _connect() as connection:
+        connection.execute(
+            "UPDATE users SET avatar_mime = ?, avatar_data = ?, updated_at = ? WHERE id = ?",
+            (mime_type, image_data, _now(), user_id),
+        )
+    return get_user(user_id)
+
+
+def delete_user_avatar(user_id):
+    with _connect() as connection:
+        connection.execute(
+            "UPDATE users SET avatar_mime = NULL, avatar_data = NULL, updated_at = ? WHERE id = ?",
+            (_now(), user_id),
+        )
+
+
+def change_user_password(user_id, old_password, new_password, current_token_hash=None):
+    with _connect() as connection:
+        user = connection.execute("SELECT password_hash FROM users WHERE id = ?", (user_id,)).fetchone()
+        if not user or not _password_matches(old_password, user["password_hash"]):
+            return False
+        connection.execute(
+            "UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?",
+            (_hash_password(new_password), _now(), user_id),
+        )
+        if current_token_hash:
+            connection.execute(
+                "DELETE FROM auth_sessions WHERE user_id = ? AND token_hash != ?",
+                (user_id, current_token_hash),
+            )
+        else:
+            connection.execute("DELETE FROM auth_sessions WHERE user_id = ?", (user_id,))
+    return True
 
 
 def _migrate_plan_status_check(connection):
@@ -113,21 +286,26 @@ def _migrate_plan_status_check(connection):
         raise
 
 
-def create_session(session_id, title="Новая диаграмма"):
+def create_session(session_id, title="Новая диаграмма", user_id=None):
     now = _now()
     with _connect() as connection:
         connection.execute(
-            "INSERT INTO sessions(id, title, created_at, updated_at) VALUES (?, ?, ?, ?)",
-            (session_id, title, now, now),
+            "INSERT INTO sessions(id, user_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+            (session_id, user_id, title, now, now),
         )
 
 
-def list_sessions():
+def list_sessions(user_id=None):
     with _connect() as connection:
-        rows = connection.execute(
+        query = (
             "SELECT id, title, current_revision_id, created_at, updated_at "
-            "FROM sessions ORDER BY updated_at DESC"
-        ).fetchall()
+            "FROM sessions"
+        )
+        params = ()
+        if user_id is not None:
+            query += " WHERE user_id = ?"
+            params = (user_id,)
+        rows = connection.execute(query + " ORDER BY updated_at DESC", params).fetchall()
     return [dict(row) for row in rows]
 
 

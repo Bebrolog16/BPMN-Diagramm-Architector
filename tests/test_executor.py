@@ -68,6 +68,14 @@ task = sdk.add_task("Review", sdk.ROOT_PROCESS_ID[0])
             self.assertFalse(result["success"])
             self.assertFalse(output.exists())
 
+    def test_rejects_oversized_generated_code(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = Path(temp_dir) / "diagram.bpmn"
+            result = CodeExecutor(str(output)).execute("#" + ("x" * 50_000))
+            self.assertFalse(result["success"])
+            self.assertIn("Generated code is too large", result["error"])
+            self.assertFalse(output.exists())
+
 
 if __name__ == "__main__":
     unittest.main()

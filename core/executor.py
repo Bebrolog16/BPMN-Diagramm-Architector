@@ -43,6 +43,8 @@ class _GeneratedCodeInterpreter:
 
     def run(self, source):
         try:
+            if not isinstance(source, str) or not source.strip():
+                raise ValueError("Generated code is empty")
             if len(source) > self.MAX_SOURCE_CHARS:
                 raise ValueError("Generated code is too large")
             tree = ast.parse(source, mode="exec")

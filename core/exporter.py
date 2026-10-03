@@ -133,7 +133,7 @@ class BPMNExporter:
             )
 
         for edge_index, edge in enumerate(self.graph.edges):
-            waypoints = self._route_edge(edge)
+            waypoints = self._route_edge(edge, edge_index)
             edge_flow_id = self._flow_id(edge, edge_index)
             edge_element = etree.SubElement(
                 plane,
@@ -196,7 +196,7 @@ class BPMNExporter:
             height=self._number(height),
         )
 
-    def _route_edge(self, edge):
+    def _route_edge(self, edge, edge_index):
         source = self.graph.nodes[edge.source]
         target = self.graph.nodes[edge.target]
         sx = source.coords[0] + source.width
@@ -205,12 +205,20 @@ class BPMNExporter:
         ty = target.coords[1] + target.height / 2
 
         if tx > sx + 20:
-            mid_x = (sx + tx) / 2
+            mid_x = (sx + tx) / 2 + self._fan_offset(edge, edge_index)
             if abs(sy - ty) < 1:
                 return [(sx, sy), (tx, ty)]
             return [(sx, sy), (mid_x, sy), (mid_x, ty), (tx, ty)]
 
-        track = min(source.coords[1], target.coords[1]) - 35
+        track_rank = sum(
+            1
+            for candidate in self.graph.edges[:edge_index]
+            if self.graph.nodes[candidate.target].coords[0]
+            <= self.graph.nodes[candidate.source].coords[0]
+            + self.graph.nodes[candidate.source].width
+            + 20
+        )
+        track = min(source.coords[1], target.coords[1]) - 35 - track_rank * 16
         return [
             (sx, sy),
             (sx + 24, sy),
@@ -219,6 +227,21 @@ class BPMNExporter:
             (tx - 24, ty),
             (tx, ty),
         ]
+
+    def _fan_offset(self, edge, edge_index):
+        offset = 0.0
+        source_edges = [(index, candidate) for index, candidate in enumerate(self.graph.edges) if candidate.source == edge.source]
+        if len(source_edges) > 1:
+            rank = next(rank for rank, (index, _) in enumerate(source_edges) if index == edge_index)
+            spacing = min(14.0, 50.0 / len(source_edges))
+            offset += (rank - (len(source_edges) - 1) / 2) * spacing
+
+        target_edges = [(index, candidate) for index, candidate in enumerate(self.graph.edges) if candidate.target == edge.target]
+        if len(target_edges) > 1:
+            rank = next(rank for rank, (index, _) in enumerate(target_edges) if index == edge_index)
+            spacing = min(14.0, 50.0 / len(target_edges))
+            offset += (rank - (len(target_edges) - 1) / 2) * spacing
+        return offset
 
     @staticmethod
     def _flow_id(edge, index):

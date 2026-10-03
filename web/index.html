@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -133,7 +133,16 @@
         .user { align-self: flex-end; color: var(--user-msg-text); background: var(--user-msg-bg); border-bottom-right-radius: 5px; box-shadow: 0 5px 14px rgba(82,111,202,.18); }
         .bot { align-self: flex-start; color: var(--bot-msg-text); background: var(--bot-msg-bg); border: 1px solid var(--glass-border); border-bottom-left-radius: 5px; }
         .error { align-self: flex-start; color: #8f3e49; background: rgba(255,238,240,.85); border: 1px solid rgba(174,79,94,.16); border-bottom-left-radius: 5px; }
-        .plan-message { white-space: pre-wrap; }
+        .plan-message { white-space: normal; }
+        .message-body p { margin: 0 0 9px; }
+        .message-body p:last-child { margin-bottom: 0; }
+        .message-body h1, .message-body h2, .message-body h3, .message-body h4 { margin: 13px 0 7px; font-size: 1.05em; }
+        .message-body ul, .message-body ol { margin: 7px 0; padding-left: 23px; }
+        .message-body li { margin: 4px 0; padding-left: 2px; }
+        .message-body blockquote { margin: 8px 0; border-left: 2px solid var(--accent-border); padding-left: 10px; color: var(--text-secondary); }
+        .message-body pre { overflow-x: auto; margin: 9px 0 0; border-radius: 8px; padding: 10px; background: var(--muted-fill); white-space: pre; }
+        .message-body code { border-radius: 4px; padding: 1px 4px; background: var(--muted-fill); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+        .message-body pre code { padding: 0; background: transparent; }
         .plan-actions { display: flex; gap: 7px; margin-top: 10px; }
         .plan-actions button { border: 1px solid rgba(82,111,202,.18); border-radius: 9px; padding: 7px 10px; color: var(--text-main); background: var(--muted-fill); font: inherit; font-size: 11px; cursor: pointer; }
         .plan-actions .apply-plan { color: white; background: #647bc2; }
@@ -234,6 +243,59 @@
         body[data-theme="dark"] #revision-select option { color: var(--text-main); background: #232a39; }
         body[data-theme="dark"] .error { color: #ffc2c9; border-color: rgba(220,112,130,.28); background: rgba(115,41,55,.46); }
         body[data-theme="dark"] .delete-dialog::backdrop { background: rgba(4,7,13,.58); }
+        body:not(.authenticated) .app-container { visibility: hidden; }
+        #auth-screen { position: fixed; z-index: 2000; inset: 0; display: grid; place-items: center; overflow-y: auto; padding: 24px; background: var(--page-bg); }
+        body.authenticated #auth-screen { display: none; }
+        .auth-card { width: min(410px, 100%); padding: 34px; border: 1px solid var(--glass-border); border-radius: 26px; color: var(--text-main); background: var(--glass-fill); box-shadow: var(--shadow); backdrop-filter: blur(24px); }
+        .auth-mark { margin-bottom: 18px; }
+        .auth-eyebrow { margin: 0 0 8px; color: var(--text-secondary); font-size: 10px; letter-spacing: .16em; }
+        .auth-card h1 { margin: 0; font-size: 25px; letter-spacing: -.5px; }
+        .auth-description { margin: 9px 0 23px; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+        .form-field { display: grid; gap: 7px; color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+        .form-field + .form-field { margin-top: 14px; }
+        .form-field input { width: 100%; min-height: 42px; border: 1px solid rgba(100,115,138,.18); border-radius: 11px; padding: 0 12px; outline: none; color: var(--text-main); background: var(--muted-fill); font: inherit; font-size: 13px; }
+        .form-field input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--accent-ring); }
+        .primary-button, .secondary-button { min-height: 40px; border: 1px solid transparent; border-radius: 10px; padding: 0 14px; color: white; background: var(--accent-color); font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; transition: transform .18s, background .18s, opacity .18s; }
+        .primary-button:hover:not(:disabled), .secondary-button:hover:not(:disabled) { background: var(--accent-color-strong); transform: translateY(-1px); }
+        .primary-button:disabled, .secondary-button:disabled { opacity: .55; cursor: wait; }
+        #auth-submit { width: 100%; margin-top: 21px; }
+        .text-button { border: 0; padding: 8px 0; color: var(--accent-color); background: transparent; font: inherit; font-size: 12px; cursor: pointer; }
+        .auth-card > .text-button { display: block; margin: 14px auto 0; }
+        .form-error { margin: 13px 0 0; color: #a34a57; font-size: 12px; line-height: 1.45; }
+        .profile-summary { display: flex; align-items: center; gap: 10px; width: 100%; margin-top: auto; border: 1px solid var(--line-color); border-radius: 13px; padding: 9px; color: var(--text-main); text-align: left; background: var(--muted-fill); cursor: pointer; }
+        .profile-summary-copy { display: grid; flex: 1; min-width: 0; gap: 3px; }
+        .profile-summary-copy strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+        .profile-summary-copy small { color: var(--text-secondary); font-size: 10px; }
+        .profile-settings-icon { color: var(--text-secondary); font-size: 14px; }
+        .avatar-wrap { position: relative; display: grid; width: 34px; height: 34px; flex: 0 0 34px; overflow: hidden; place-items: center; border-radius: 50%; color: white; background: var(--accent-color); font-size: 12px; font-weight: 700; }
+        .avatar-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .profile-dialog { max-height: min(90vh, 800px); overflow-y: auto; }
+        .profile-dialog-content { padding: 22px; }
+        .profile-dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; }
+        .profile-dialog-heading h2 { margin: 0 0 4px; font-size: 19px; }
+        .profile-dialog-heading p { margin: 0; color: var(--text-secondary); font-size: 11px; }
+        .icon-button { width: 30px; height: 30px; border: 1px solid var(--line-color); border-radius: 9px; color: var(--text-main); background: var(--muted-fill); font: inherit; font-size: 18px; cursor: pointer; }
+        .profile-section { display: grid; gap: 12px; margin-top: 19px; border-top: 1px solid var(--line-color); padding-top: 16px; }
+        .profile-section h3 { margin: 0; font-size: 13px; }
+        .profile-section .form-field + .form-field { margin-top: 0; }
+        .profile-section input[type="file"] { min-height: auto; padding: 9px; font-size: 11px; }
+        .profile-actions, .profile-dialog-footer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .profile-dialog-footer { justify-content: space-between; margin-top: 19px; border-top: 1px solid var(--line-color); padding-top: 13px; }
+        .danger-text { color: #a34a57; }
+        #profile-status { margin: 12px 0 0; color: var(--accent-color); font-size: 12px; }
+        #profile-status[data-error="true"] { color: #b84f5e; }
+        .plan-message { white-space: normal; }
+        .message-body { min-width: 0; overflow-wrap: anywhere; }
+        .message-body > :first-child { margin-top: 0; }
+        .message-body > :last-child { margin-bottom: 0; }
+        .message-body p { margin: 0 0 9px; }
+        .message-body ul, .message-body ol { margin: 5px 0 12px; padding-left: 22px; }
+        .message-body li { margin: 4px 0; padding-left: 2px; }
+        .message-body li > ul, .message-body li > ol { margin: 4px 0 8px; }
+        .message-body strong { font-weight: 700; }
+        .message-body code { border-radius: 5px; padding: 2px 5px; background: var(--muted-fill); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+        .message-body pre { overflow-x: auto; border: 1px solid var(--line-color); border-radius: 9px; padding: 10px; background: var(--muted-fill); }
+        .message-body pre code { padding: 0; background: transparent; }
         @media (max-width: 1100px) {
             .app-container { grid-template-columns: minmax(210px, 235px) minmax(300px, 350px) minmax(0, 1fr); gap: 10px; padding: 12px; }
             #header { padding: 16px; }
@@ -257,6 +319,8 @@
             #viewer-container { min-height: 52vh; }
             #controls { left: 10px; right: 10px; bottom: 10px; transform: none; max-width: none; justify-content: center; }
             .btn-secondary { flex: 1; min-width: 0; padding: 0 5px; font-size: 10px; }
+            .auth-card { padding: 25px; }
+            .profile-dialog-content { padding: 18px; }
         }
         @media (hover: none) {
             .history-menu-button { opacity: 1; }
@@ -268,76 +332,134 @@
             #sidebar, #viewer-container, #controls { background: var(--glass-strong); backdrop-filter: none; -webkit-backdrop-filter: none; }
         }
     </style>
+    <link rel="stylesheet" href="/static/colorbook.css">
 </head>
 <body data-theme="light">
+    <section id="auth-screen" aria-labelledby="auth-title">
+        <div class="auth-card">
+            <div class="brand-mark auth-mark" aria-hidden="true">✦</div>
+            <p class="auth-eyebrow">BPMN ARCHITECT</p>
+            <h1 id="auth-title">Войдите в аккаунт</h1>
+            <p class="auth-description">Ваши чаты и диаграммы будут доступны только вам.</p>
+            <form id="auth-form">
+                <label class="form-field" id="auth-login-field">Логин
+                    <input id="auth-login" name="login" autocomplete="username" minlength="3" maxlength="32" required>
+                </label>
+                <label class="form-field">Пароль
+                    <input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required>
+                </label>
+                <button id="auth-submit" class="primary-button" type="submit">Войти</button>
+            </form>
+            <p id="auth-error" class="form-error" role="alert" hidden></p>
+            <button id="auth-switch" class="text-button" type="button">Нет аккаунта? Зарегистрироваться</button>
+        </div>
+    </section>
     <div class="app-container">
-        <aside id="history-sidebar" aria-label="Chat history">
+        <aside id="history-sidebar" aria-label="История чатов">
             <div class="history-heading">
-                <h2>Chats</h2>
-                <button id="new-session" type="button">+ New chat</button>
+                <h2>Чаты</h2>
+                <button id="new-session" type="button">+ Новый чат</button>
             </div>
             <label class="history-search">
                 <span class="search-icon" aria-hidden="true">⌕</span>
-                <input id="chat-search" type="search" placeholder="Search chats…" autocomplete="off" aria-label="Search chats">
+                <input id="chat-search" type="search" placeholder="Поиск чатов…" autocomplete="off" aria-label="Поиск чатов">
             </label>
-            <div class="history-label">Your conversations</div>
-            <nav id="session-list" aria-label="Saved chats"></nav>
-            <div class="history-footnote">Saved locally on this device</div>
+            <div class="history-label">История</div>
+            <nav id="session-list" aria-label="Сохранённые чаты"></nav>
+            <button id="profile-open" class="profile-summary" type="button">
+                <span class="avatar-wrap"><img id="sidebar-avatar" alt=""><span id="sidebar-avatar-fallback">П</span></span>
+                <span class="profile-summary-copy"><strong id="sidebar-nickname">Профиль</strong><small id="sidebar-login"></small></span>
+                <span class="profile-settings-icon" aria-hidden="true">⚙</span>
+            </button>
+            <div class="history-footnote">Сохранено на этом устройстве</div>
         </aside>
         <div id="history-scrim" aria-hidden="true"></div>
         <div id="sidebar">
             <div id="header">
                 <div class="brand">
-                    <button id="history-toggle" type="button" title="Open chat history" aria-label="Open chat history">☰</button>
+                    <button id="history-toggle" type="button" title="Открыть историю чатов" aria-label="Открыть историю чатов">☰</button>
                     <div class="brand-mark" aria-hidden="true">✦</div>
                     <div>
                         <h1>BPMN Architect</h1>
-                        <p class="eyebrow">AI process studio</p>
+                        <p class="eyebrow">студия бизнес-процессов</p>
                     </div>
                 </div>
                 <div class="header-actions">
-                    <button id="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme">☾</button>
+                    <button id="theme-toggle" type="button" aria-label="Включить тёмную тему" title="Включить тёмную тему">☾</button>
                 </div>
             </div>
             <div id="chat-container">
-                <div class="message bot">Hello! Describe your business process, and I'll architect a BPMN diagram for you. ✨</div>
+                <div class="message bot"><div class="message-body">Здравствуйте! Опишите бизнес-процесс, и я подготовлю BPMN-диаграмму. ✨</div></div>
             </div>
             <div id="input-area">
-                <input type="text" id="user-input" placeholder="e.g. Customer orders a pizza...">
-                <button id="send-btn">Send</button>
+                <input type="text" id="user-input" placeholder="Например: клиент оформляет заказ…">
+                <button id="send-btn">Отправить</button>
             </div>
         </div>
         <div id="viewer-container">
-            <div class="revision-picker"><select id="revision-select" aria-label="Diagram version history"><option value="">No saved versions</option></select></div>
+            <div class="revision-picker"><select id="revision-select" aria-label="История версий диаграммы"><option value="">Нет сохранённых версий</option></select></div>
             <div id="loading-overlay" aria-hidden="true" role="status" aria-live="polite">
                 <div class="dino-track" aria-hidden="true">
                     <span class="dino-runner">🦖</span>
                     <span class="dino-ground"></span>
                 </div>
-                <p class="loading-label">Building your diagram…</p>
+                <p class="loading-label">Строю диаграмму…</p>
             </div>
-            <div id="controls" aria-label="Diagram controls">
-                <button class="btn-secondary" id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">Zoom +</button>
-                <button class="btn-secondary" id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">Zoom −</button>
-                <button class="btn-secondary" id="center-btn" type="button" title="Fit diagram to view">Fit</button>
-                <button class="btn-secondary" id="download-btn" type="button" disabled>Download BPMN</button>
+            <div id="controls" aria-label="Управление диаграммой">
+                <button class="btn-secondary" id="zoom-in" type="button" title="Увеличить" aria-label="Увеличить">Увеличить +</button>
+                <button class="btn-secondary" id="zoom-out" type="button" title="Уменьшить" aria-label="Уменьшить">Уменьшить −</button>
+                <button class="btn-secondary" id="center-btn" type="button" title="По центру">По центру</button>
+                <button class="btn-secondary" id="download-btn" type="button" disabled>Скачать BPMN</button>
             </div>
             <div id="canvas"></div>
             <div class="viewer-empty" id="empty-state" aria-live="polite">
                 <div class="viewer-empty-mark" aria-hidden="true">◇</div>
-                <strong>Your diagram will appear here</strong>
-                <span>Describe a business process to get started</span>
+                <strong>Здесь появится диаграмма</strong>
+                <span>Опишите бизнес-процесс, чтобы начать</span>
             </div>
         </div>
     </div>
+    <dialog id="profile-dialog" class="delete-dialog profile-dialog">
+        <div class="delete-dialog-content">
+            <div class="profile-dialog-heading">
+                <div><h2>Профиль</h2><p id="profile-login-label"></p></div>
+                <button id="profile-close" class="icon-button" type="button" aria-label="Закрыть">×</button>
+            </div>
+            <form id="profile-form" class="profile-section">
+                <label class="form-field">Никнейм<input id="profile-nickname" maxlength="40" required></label>
+                <button class="primary-button" type="submit">Сохранить никнейм</button>
+            </form>
+            <section class="profile-section">
+                <h3>Фото профиля</h3>
+                <label class="form-field">Выберите файл
+                    <input id="avatar-file" type="file" accept="image/png,image/jpeg,image/webp">
+                </label>
+                <div class="profile-actions">
+                    <button id="avatar-upload" class="secondary-button" type="button">Загрузить фото</button>
+                    <button id="avatar-remove" class="text-button" type="button">Удалить фото</button>
+                </div>
+            </section>
+            <form id="password-form" class="profile-section">
+                <h3>Сменить пароль</h3>
+                <label class="form-field">Текущий пароль<input id="old-password" type="password" autocomplete="current-password" required></label>
+                <label class="form-field">Новый пароль<input id="new-password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+                <button class="secondary-button" type="submit">Обновить пароль</button>
+            </form>
+            <p id="profile-status" role="status" hidden></p>
+            <div class="profile-dialog-footer">
+                <button id="logout-button" class="text-button danger-text" type="button">Выйти из аккаунта</button>
+                <button id="profile-done" class="secondary-button" type="button">Готово</button>
+            </div>
+        </div>
+    </dialog>
     <dialog id="delete-dialog" class="delete-dialog">
         <div class="delete-dialog-content">
             <div class="delete-dialog-mark" aria-hidden="true">⌫</div>
-            <h2>Delete this chat?</h2>
-            <p id="delete-dialog-message">This will permanently remove the conversation and all saved diagram versions.</p>
+            <h2>Удалить чат?</h2>
+            <p id="delete-dialog-message">Чат и сохранённые версии диаграммы будут удалены.</p>
             <div class="delete-dialog-actions">
-                <button id="cancel-delete" type="button">Cancel</button>
-                <button id="confirm-delete" type="button">Delete chat</button>
+                <button id="cancel-delete" type="button">Отмена</button>
+                <button id="confirm-delete" type="button">Удалить чат</button>
             </div>
         </div>
     </dialog>
@@ -351,11 +473,14 @@
         const sessionList = document.getElementById('session-list');
         const revisionSelect = document.getElementById('revision-select');
         const deleteDialog = document.getElementById('delete-dialog');
+        const profileDialog = document.getElementById('profile-dialog');
         const SESSION_KEY = 'bpmn-architect-session';
         const THEME_KEY = 'bpmn-architect-theme';
         let sessionId = localStorage.getItem(SESSION_KEY);
         let currentRevisionId = null;
         let deleteTargetId = null;
+        let authMode = 'login';
+        let currentUser = null;
 
         function setTheme(theme) {
             const isDark = theme === 'dark';
@@ -363,7 +488,7 @@
             localStorage.setItem(THEME_KEY, isDark ? 'dark' : 'light');
             const toggle = document.getElementById('theme-toggle');
             toggle.textContent = isDark ? '☀' : '☾';
-            toggle.title = isDark ? 'Switch to light theme' : 'Switch to dark theme';
+            toggle.title = isDark ? 'Включить светлую тему' : 'Включить тёмную тему';
             toggle.setAttribute('aria-label', toggle.title);
         }
 
@@ -379,34 +504,295 @@
             try {
                 data = raw ? JSON.parse(raw) : {};
             } catch {
-                data = { detail: raw.trim() || `Server returned a non-JSON response (${response.status}).` };
+                data = { detail: raw.trim() || `Сервер вернул неожиданный ответ (${response.status}).` };
             }
             if (!response.ok) {
-                const detail = data.detail || `Request failed (${response.status}).`;
-                const error = new Error(typeof detail === 'string' ? detail : `Request failed (${response.status}).`);
+                const detail = data.detail || `Ошибка запроса (${response.status}).`;
+                const error = new Error(typeof detail === 'string' ? detail : `Ошибка запроса (${response.status}).`);
                 error.status = response.status;
                 throw error;
             }
-            if (!raw || typeof data !== 'object') throw new Error('The server returned an unexpected response.');
+            if (!raw || typeof data !== 'object') throw new Error('Сервер вернул неожиданный ответ.');
             return data;
+        }
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            const registering = mode === 'register';
+            document.getElementById('auth-title').textContent = registering ? 'Создать аккаунт' : 'Войти в аккаунт';
+            document.getElementById('auth-password').autocomplete = registering ? 'new-password' : 'current-password';
+            document.getElementById('auth-submit').textContent = registering ? 'Зарегистрироваться' : 'Войти';
+            document.getElementById('auth-switch').textContent = registering
+                ? 'Уже есть аккаунт? Войти'
+                : 'Нет аккаунта? Зарегистрироваться';
+            document.getElementById('auth-error').hidden = true;
+        }
+
+        function setUserProfile(user) {
+            currentUser = user;
+            document.getElementById('sidebar-nickname').textContent = user.nickname;
+            document.getElementById('sidebar-login').textContent = `@${user.login}`;
+            document.getElementById('profile-login-label').textContent = `@${user.login}`;
+            document.getElementById('profile-nickname').value = user.nickname;
+            const avatar = document.getElementById('sidebar-avatar');
+            const fallback = document.getElementById('sidebar-avatar-fallback');
+            fallback.textContent = (user.nickname || user.login || '?').slice(0, 1).toLocaleUpperCase('ru');
+            avatar.hidden = !user.has_avatar;
+            fallback.hidden = Boolean(user.has_avatar);
+            avatar.onerror = () => { avatar.hidden = true; fallback.hidden = false; };
+            if (user.has_avatar) avatar.src = `/auth/avatar?v=${Date.now()}`;
+        }
+
+        function showProfileStatus(message, isError = false) {
+            const status = document.getElementById('profile-status');
+            status.textContent = message;
+            status.hidden = !message;
+            status.dataset.error = String(isError);
+        }
+
+        async function authenticate(path, payload) {
+            const button = document.getElementById('auth-submit');
+            const error = document.getElementById('auth-error');
+            button.disabled = true;
+            error.hidden = true;
+            try {
+                const result = await api(path, { method: 'POST', body: JSON.stringify(payload) });
+                setUserProfile(result.user);
+                document.body.classList.add('authenticated');
+                document.getElementById('auth-password').value = '';
+                await initialize();
+            } catch (exception) {
+                error.textContent = exception.message || 'Не удалось выполнить вход.';
+                error.hidden = false;
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function checkAuth() {
+            try {
+                const result = await api('/auth/me');
+                setUserProfile(result.user);
+                document.body.classList.add('authenticated');
+                await initialize();
+            } catch (error) {
+                if (error.status !== 401) {
+                    const message = document.getElementById('auth-error');
+                    message.textContent = error.message || 'Не удалось подключиться к серверу.';
+                    message.hidden = false;
+                }
+            }
+        }
+
+        document.getElementById('auth-switch').addEventListener('click', () => {
+            setAuthMode(authMode === 'login' ? 'register' : 'login');
+        });
+        document.getElementById('auth-form').addEventListener('submit', event => {
+            event.preventDefault();
+            const login = document.getElementById('auth-login').value.trim();
+            const password = document.getElementById('auth-password').value;
+            const payload = { login, password };
+            authenticate(authMode === 'register' ? '/auth/register' : '/auth/login', payload);
+        });
+
+        document.getElementById('profile-open').addEventListener('click', () => {
+            showProfileStatus('');
+            profileDialog.showModal();
+        });
+        document.getElementById('profile-close').addEventListener('click', () => profileDialog.close());
+        document.getElementById('profile-done').addEventListener('click', () => profileDialog.close());
+        document.getElementById('profile-form').addEventListener('submit', async event => {
+            event.preventDefault();
+            try {
+                const result = await api('/auth/profile', {
+                    method: 'PATCH', body: JSON.stringify({ nickname: document.getElementById('profile-nickname').value.trim() })
+                });
+                setUserProfile(result.user);
+                showProfileStatus('Никнейм обновлён.');
+            } catch (error) { showProfileStatus(error.message || 'Не удалось сохранить никнейм.', true); }
+        });
+        document.getElementById('avatar-upload').addEventListener('click', async () => {
+            const file = document.getElementById('avatar-file').files[0];
+            if (!file) { showProfileStatus('Сначала выберите фото.', true); return; }
+            if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+                showProfileStatus('Выберите PNG, JPEG или WebP размером до 2 МБ.', true);
+                return;
+            }
+            try {
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(new Error('Не удалось прочитать файл.'));
+                    reader.readAsDataURL(file);
+                });
+                const result = await api('/auth/avatar', { method: 'PUT', body: JSON.stringify({ data_url: dataUrl }) });
+                setUserProfile(result.user);
+                document.getElementById('avatar-file').value = '';
+                showProfileStatus('Фото профиля обновлено.');
+            } catch (error) { showProfileStatus(error.message || 'Не удалось загрузить фото.', true); }
+        });
+        document.getElementById('avatar-remove').addEventListener('click', async () => {
+            try {
+                await api('/auth/avatar', { method: 'DELETE' });
+                setUserProfile({ ...currentUser, has_avatar: false });
+                showProfileStatus('Фото удалено.');
+            } catch (error) { showProfileStatus(error.message || 'Не удалось удалить фото.', true); }
+        });
+        document.getElementById('password-form').addEventListener('submit', async event => {
+            event.preventDefault();
+            try {
+                await api('/auth/password', {
+                    method: 'PATCH', body: JSON.stringify({
+                        old_password: document.getElementById('old-password').value,
+                        new_password: document.getElementById('new-password').value
+                    })
+                });
+                event.currentTarget.reset();
+                showProfileStatus('Пароль обновлён.');
+            } catch (error) { showProfileStatus(error.message || 'Не удалось обновить пароль.', true); }
+        });
+        document.getElementById('logout-button').addEventListener('click', async () => {
+            try { await api('/auth/logout', { method: 'POST' }); }
+            finally {
+                profileDialog.close();
+                document.body.classList.remove('authenticated');
+                localStorage.removeItem(SESSION_KEY);
+                sessionId = null;
+                currentUser = null;
+                document.getElementById('auth-password').value = '';
+                setAuthMode('login');
+            }
+        });
+
+        function appendInline(parent, text) {
+            const pattern = /(\*\*[^*]+\*\*|__[^_]+__|`[^`]+`|\*[^*\n]+\*|_[^_\n]+_)/g;
+            let cursor = 0;
+            for (const match of text.matchAll(pattern)) {
+                if (match.index > cursor) parent.appendChild(document.createTextNode(text.slice(cursor, match.index)));
+                const token = match[0];
+                const delimiter = token.startsWith('**') || token.startsWith('__') ? 2 : 1;
+                const element = document.createElement(token.startsWith('`') ? 'code' : delimiter === 2 ? 'strong' : 'em');
+                element.textContent = token.slice(delimiter, -delimiter);
+                parent.appendChild(element);
+                cursor = match.index + token.length;
+            }
+            if (cursor < text.length) parent.appendChild(document.createTextNode(text.slice(cursor)));
+        }
+
+        function renderMarkdown(container, source) {
+            container.replaceChildren();
+            const lines = String(source || '').replace(/\r\n?/g, '\n').split('\n');
+            let paragraph = [];
+            let listStack = [];
+            let codeLines = null;
+            const flushParagraph = () => {
+                if (!paragraph.length) return;
+                const element = document.createElement('p');
+                appendInline(element, paragraph.join(' '));
+                container.appendChild(element);
+                paragraph = [];
+            };
+            const addListItem = (indent, type, content, start) => {
+                while (listStack.length && listStack[listStack.length - 1].indent > indent) listStack.pop();
+                let current = listStack[listStack.length - 1];
+                if (!current || indent > current.indent) {
+                    const parent = current?.lastItem || container;
+                    const list = document.createElement(type);
+                    if (type === 'ol' && start) list.start = Number(start);
+                    parent.appendChild(list);
+                    current = { indent, type, list, lastItem: null };
+                    listStack.push(current);
+                } else if (current.type !== type) {
+                    const list = document.createElement(type);
+                    if (type === 'ol' && start) list.start = Number(start);
+                    current.list.parentNode.appendChild(list);
+                    current = { indent, type, list, lastItem: null };
+                    listStack[listStack.length - 1] = current;
+                }
+                const item = document.createElement('li');
+                appendInline(item, content);
+                current.list.appendChild(item);
+                current.lastItem = item;
+            };
+
+            for (const line of lines) {
+                if (line.trim().startsWith('```')) {
+                    flushParagraph();
+                    listStack = [];
+                    if (codeLines) {
+                        const pre = document.createElement('pre');
+                        const code = document.createElement('code');
+                        code.textContent = codeLines.join('\n');
+                        pre.appendChild(code);
+                        container.appendChild(pre);
+                        codeLines = null;
+                    } else codeLines = [];
+                    continue;
+                }
+                if (codeLines) { codeLines.push(line); continue; }
+                if (!line.trim()) { flushParagraph(); listStack = []; continue; }
+
+                const listMatch = /^(\s*)(?:([-*+])|(\d+)[.)])\s+(.*)$/.exec(line);
+                if (listMatch) {
+                    flushParagraph();
+                    addListItem(listMatch[1].replace(/\t/g, '    ').length, listMatch[2] ? 'ul' : 'ol', listMatch[4], listMatch[3]);
+                    continue;
+                }
+                const heading = /^(#{1,6})\s+(.+)$/.exec(line);
+                if (heading) {
+                    flushParagraph();
+                    listStack = [];
+                    const element = document.createElement(`h${heading[1].length}`);
+                    appendInline(element, heading[2]);
+                    container.appendChild(element);
+                    continue;
+                }
+                if (/^\s*>\s?/.test(line)) {
+                    flushParagraph();
+                    listStack = [];
+                    const quote = document.createElement('blockquote');
+                    appendInline(quote, line.replace(/^\s*>\s?/, ''));
+                    container.appendChild(quote);
+                    continue;
+                }
+                listStack = [];
+                paragraph.push(line.trim());
+            }
+            flushParagraph();
+            if (codeLines) {
+                const pre = document.createElement('pre');
+                const code = document.createElement('code');
+                code.textContent = codeLines.join('\n');
+                pre.appendChild(code);
+                container.appendChild(pre);
+            }
         }
 
         function appendMessage(kind, text, planId = null, canApply = false) {
             const message = document.createElement('div');
             message.className = `message ${kind}${planId ? ' plan-message' : ''}`;
-            message.textContent = text;
+            const body = document.createElement('div');
+            body.className = 'message-body';
+            renderMarkdown(body, text);
+            message.appendChild(body);
             if (planId && canApply) {
                 const actions = document.createElement('div');
                 actions.className = 'plan-actions';
                 const apply = document.createElement('button');
                 apply.className = 'apply-plan';
-                apply.textContent = 'Apply plan';
+                apply.textContent = 'Применить план';
                 apply.addEventListener('click', () => applyPlan(planId, apply));
                 const discard = document.createElement('button');
-                discard.textContent = 'Discard';
+                discard.textContent = 'Отклонить';
                 discard.addEventListener('click', async () => {
-                    await api(`/sessions/${sessionId}/plans/${planId}/discard`, { method: 'POST' });
-                    actions.remove();
+                    discard.disabled = true;
+                    try {
+                        await api(`/sessions/${sessionId}/plans/${planId}/discard`, { method: 'POST' });
+                        actions.remove();
+                    } catch (error) {
+                        appendMessage('error', error.message || 'Не удалось отклонить план.');
+                        discard.disabled = false;
+                    }
                 });
                 actions.append(apply, discard);
                 message.appendChild(actions);
@@ -429,10 +815,10 @@
             const today = new Date();
             const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
             const age = midnight - new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            if (age === 0) return 'Today';
-            if (age === 86_400_000) return 'Yesterday';
-            if (age > 0 && age < 7 * 86_400_000) return 'Previous 7 days';
-            return 'Older';
+            if (age === 0) return 'Сегодня';
+            if (age === 86_400_000) return 'Вчера';
+            if (age > 0 && age < 7 * 86_400_000) return 'Последние 7 дней';
+            return 'Ранее';
         }
 
         async function refreshSessionList() {
@@ -443,7 +829,7 @@
             if (!visible.length) {
                 const empty = document.createElement('p');
                 empty.className = 'history-empty';
-                empty.textContent = query ? 'No chats match your search.' : 'Your saved chats will appear here.';
+                empty.textContent = query ? 'По этому запросу чатов нет.' : 'Сохранённые чаты появятся здесь.';
                 sessionList.appendChild(empty);
                 return;
             }
@@ -453,7 +839,7 @@
                 if (!groups.has(label)) groups.set(label, []);
                 groups.get(label).push(session);
             }
-            for (const label of ['Today', 'Yesterday', 'Previous 7 days', 'Older']) {
+            for (const label of ['Сегодня', 'Вчера', 'Последние 7 дней', 'Ранее']) {
                 if (!groups.has(label)) continue;
                 const sectionLabel = document.createElement('div');
                 sectionLabel.className = 'history-label';
@@ -473,11 +859,15 @@
                 sessionId = session.id;
                 localStorage.setItem(SESSION_KEY, sessionId);
                 document.body.classList.remove('history-open');
-                await loadSession();
+                try {
+                    await loadSession();
+                } catch (error) {
+                    appendMessage('error', error.message || 'Не удалось открыть этот чат.');
+                }
             });
             const title = document.createElement('span');
             title.className = 'history-title';
-            title.textContent = session.title || 'Untitled chat';
+            title.textContent = session.title || 'Чат без названия';
             const time = document.createElement('span');
             time.className = 'history-time';
             time.textContent = new Date(session.updated_at).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -486,7 +876,7 @@
             menuButton.className = 'history-menu-button';
             menuButton.type = 'button';
             menuButton.textContent = '···';
-            menuButton.setAttribute('aria-label', `Actions for ${session.title}`);
+            menuButton.setAttribute('aria-label', `Действия для чата «${session.title}»`);
             menuButton.addEventListener('click', event => {
                 event.stopPropagation();
                 const existing = document.querySelector('.history-menu');
@@ -502,7 +892,7 @@
                 menu.style.top = `${anchor.bottom + menuHeight + 8 <= window.innerHeight ? anchor.bottom + 5 : Math.max(8, anchor.top - menuHeight - 5)}px`;
                 const rename = document.createElement('button');
                 rename.type = 'button';
-                rename.textContent = 'Rename';
+                rename.textContent = 'Переименовать';
                 rename.addEventListener('click', () => {
                     menu.remove();
                     startRename(session, title);
@@ -510,11 +900,11 @@
                 const remove = document.createElement('button');
                 remove.type = 'button';
                 remove.className = 'delete-chat';
-                remove.textContent = 'Delete';
+                remove.textContent = 'Удалить';
                 remove.addEventListener('click', () => {
                     menu.remove();
                     deleteTargetId = session.id;
-                    document.getElementById('delete-dialog-message').textContent = 'This will permanently remove the conversation and all saved diagram versions.';
+                    document.getElementById('delete-dialog-message').textContent = 'Чат и все сохранённые версии диаграммы будут удалены без возможности восстановления.';
                     deleteDialog.showModal();
                 });
                 menu.append(rename, remove);
@@ -532,7 +922,7 @@
             const input = document.createElement('input');
             input.className = 'history-rename';
             input.value = session.title;
-            input.setAttribute('aria-label', 'New chat title');
+            input.setAttribute('aria-label', 'Новое название чата');
             titleElement.replaceWith(input);
             input.focus();
             input.select();
@@ -561,7 +951,7 @@
             const data = await api(`/sessions/${sessionId}`);
             chatContainer.replaceChildren();
             if (!data.messages.length) {
-                appendMessage('bot', 'Describe a process or request a change. I will propose a plan before editing the diagram.');
+                appendMessage('bot', 'Опишите процесс или запланируйте изменение. Перед правкой диаграммы я предложу план.');
             } else {
                 const pending = new Map(data.plans.filter(plan => plan.status === 'pending').map(plan => [plan.id, plan.plan_text]));
                 for (const message of data.messages) {
@@ -574,7 +964,7 @@
             if (!data.revisions.length) {
                 const option = document.createElement('option');
                 option.value = '';
-                option.textContent = 'No saved versions';
+                option.textContent = 'Сохранённых версий пока нет';
                 revisionSelect.appendChild(option);
             } else {
                 for (const revision of data.revisions) {
@@ -587,6 +977,7 @@
             }
             if (data.current_revision) await showDiagram(data.current_revision.xml);
             else {
+                bpmnModeler.clear();
                 document.getElementById('canvas').classList.remove('diagram-ready');
                 downloadButton.disabled = true;
             }
@@ -603,7 +994,7 @@
                 }
                 await loadSession();
             } catch (error) {
-                appendMessage('error', error.message || 'Could not load saved sessions.');
+                appendMessage('error', error.message || 'Не удалось загрузить сохранённые чаты.');
             }
         }
 
@@ -621,10 +1012,10 @@
                 });
                 appendMessage('user', text);
                 appendMessage('bot', result.plan, result.plan_id, result.status === 'pending');
-                if (result.status === 'stale') appendMessage('bot', 'The diagram changed while this plan was being prepared. Please request a fresh plan.');
+                if (result.status === 'stale') appendMessage('bot', 'Пока готовился план, диаграмма изменилась. Запросите новый план.');
             } catch (error) {
                 appendMessage('user', text);
-                appendMessage('error', error.message || 'Could not create a change plan.');
+                appendMessage('error', error.message || 'Не удалось подготовить план изменений.');
             } finally {
                 button.disabled = false;
                 loading.setAttribute('aria-hidden', 'true');
@@ -640,13 +1031,13 @@
                 });
                 currentRevisionId = result.revision_id;
                 await showDiagram(result.xml);
-                appendMessage('bot', `Changes saved as version ${result.revision_id.slice(0, 8)}.`);
+                appendMessage('bot', `Изменения сохранены в версии ${result.revision_id.slice(0, 8)}.`);
                 await loadSession();
             } catch (error) {
-                appendMessage('error', error.message || 'Could not apply this plan.');
+                appendMessage('error', error.message || 'Не удалось применить этот план.');
                 if (error.status === 409) await loadSession();
-                button.disabled = false;
             } finally {
+                button.disabled = false;
                 loading.setAttribute('aria-hidden', 'true');
             }
         }
@@ -656,11 +1047,19 @@
             if (event.key === 'Enter') sendMessage();
         });
         document.getElementById('new-session').addEventListener('click', async () => {
-            const result = await api('/sessions', { method: 'POST' });
-            sessionId = result.session_id;
-            localStorage.setItem(SESSION_KEY, sessionId);
-            document.body.classList.remove('history-open');
-            await loadSession();
+            const button = document.getElementById('new-session');
+            button.disabled = true;
+            try {
+                const result = await api('/sessions', { method: 'POST' });
+                sessionId = result.session_id;
+                localStorage.setItem(SESSION_KEY, sessionId);
+                document.body.classList.remove('history-open');
+                await loadSession();
+            } catch (error) {
+                appendMessage('error', error.message || 'Не удалось создать новый чат.');
+            } finally {
+                button.disabled = false;
+            }
         });
         document.getElementById('chat-search').addEventListener('input', refreshSessionList);
         document.getElementById('history-toggle').addEventListener('click', () => document.body.classList.add('history-open'));
@@ -693,7 +1092,7 @@
                     await refreshSessionList();
                 }
             } catch (error) {
-                const message = error.message || 'Could not delete this chat. Please try again.';
+                const message = error.message || 'Не удалось удалить чат. Попробуйте ещё раз.';
                 if (deleteDialog.open) document.getElementById('delete-dialog-message').textContent = message;
                 else appendMessage('error', message);
             } finally {
@@ -715,7 +1114,7 @@
         document.getElementById('zoom-in').onclick = () => bpmnModeler.get('canvas').zoom(1.2);
         document.getElementById('zoom-out').onclick = () => bpmnModeler.get('canvas').zoom(0.8);
         document.getElementById('center-btn').onclick = () => bpmnModeler.get('canvas').fitToScreen();
-        initialize();
+        checkAuth();
     </script>
 </body>
 </html>
