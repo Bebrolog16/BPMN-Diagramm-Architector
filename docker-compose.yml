@@ -1,0 +1,38 @@
+services:
+  bpmn-architect:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      BPMN_DATA_DIR: /app/data
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5-coder:7b-instruct}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434/api/generate}
+      OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-120}
+      MAX_GENERATION_ATTEMPTS: ${MAX_GENERATION_ATTEMPTS:-3}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - bpmn-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 128
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/sessions', timeout=3)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  bpmn-data:

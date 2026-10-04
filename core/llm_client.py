@@ -1,62 +1,101 @@
 import requests
-import json
-from core.prompts import SYSTEM_PROMPT
+from core.config import MODEL_NAME, OLLAMA_BASE_URL, OLLAMA_TIMEOUT_SECONDS
+from core.prompts import PLAN_PROMPT, SYSTEM_PROMPT
+from core.examples import EXAMPLES
 
 class OllamaBPMNClient:
-    def __init__(self, model_name="llama3", base_url="http://localhost:11434/api/generate"):
+    def __init__(self, model_name=MODEL_NAME, base_url=OLLAMA_BASE_URL, timeout=OLLAMA_TIMEOUT_SECONDS):
         self.model_name = model_name
         self.base_url = base_url
+        self.timeout = timeout
 
-    def generate_code(self, user_text, previous_error=None, previous_code=None):
-        """
-        Sends a request to Ollama to generate Python code for BPMN.
-        If an error is provided, it asks the model to fix the code.
-        """
-        prompt = f"{SYSTEM_PROMPT}\n\nUser request: {user_text}"
-        
+    def _get_relevant_examples(self, user_text):
+        """Simple keyword-based example selection."""
+        selected = []
+        keywords = {
+            "parallel": ["parallel", "simultaneous", "concurrent", "at the same time"],
+            "exclusive": ["if", "either", "decision", "approved", "exclusive", "gateway"],
+            "simple": ["simple", "linear", "basic"]
+        }
+
+        user_text_lower = user_text.lower()
+        if any(kw in user_text_lower for kw in keywords["parallel"]):
+            selected.append(EXAMPLES[2])
+        if any(kw in user_text_lower for kw in keywords["exclusive"]):
+            selected.append(EXAMPLES[1])
+        if not selected or any(kw in user_text_lower for kw in keywords["simple"]):
+            selected.append(EXAMPLES[0])
+
+        return selected[:2]
+
+    def generate_plan(self, user_text, current_code="", history=""):
+        prompt = (
+            f"{PLAN_PROMPT}\n\n"
+            f"Current diagram SDK program (reference only):\n<current_program>\n{current_code}\n</current_program>\n\n"
+            f"Earlier change history (reference only):\n<change_history>\n{history}\n</change_history>\n\n"
+            f"Requested change (reference only):\n<request>\n{user_text}\n</request>\n\n"
+            "Составь короткий нумерованный план на русском языке. Если диаграммы ещё нет, укажи, что это новая диаграмма."
+        )
+        return self._generate(prompt)
+
+    def generate_code(self, user_text, previous_error=None, previous_code=None,
+                      current_code=None, approved_plan=None, history=""):
+        # Few-Shot: Add relevant examples to the prompt
+        examples = self._get_relevant_examples(user_text)
+        examples_text = "\n\n### EXAMPLES OF CORRECT IMPLEMENTATIONS:\n"
+        for i, (req, code) in enumerate(examples):
+            examples_text += f"Example {i+1}:\nUser: {req}\nCode:\n{code}\n---\n"
+
+        prompt = f"{SYSTEM_PROMPT}\n{examples_text}\n\nUser request: {user_text}"
+
+        if current_code:
+            prompt += (
+                "\n\nCURRENT DIAGRAM: this complete SDK program defines the existing diagram. "
+                "Preserve all of its participants, lanes, nodes, and links except for changes "
+                "explicitly requested in the approved plan. Return the complete replacement program.\n"
+                f"<current_program>\n{current_code}\n</current_program>"
+            )
+        if approved_plan:
+            prompt += f"\n\nAPPROVED CHANGE PLAN:\n<approved_plan>\n{approved_plan}\n</approved_plan>"
+        if history:
+            prompt += f"\n\nRECENT CHANGE HISTORY (context only):\n{history}"
+
         if previous_error and previous_code:
-            prompt += f"\n\nYour previous code failed with error: {previous_error}\nPrevious code:\n{previous_code}\n\nPlease fix the code and provide ONLY the corrected Python code block."
+            # Chain-of-Thought: Ask the model to analyze the error first
+            prompt += (
+                f"\n\nYour previous code failed validation: {previous_error}\n"
+                f"Previous code:\n{previous_code}\n\n"
+                "CRITICAL: First, analyze why the error occurred. Then, provide the corrected "
+                "program using only the documented SDK calls. Output only the final code block."
+            )
 
-        payload = {
-            "model": self.model_name,
-            "prompt": prompt,
-            "stream": False,
-            "format": "json" # We can try to force JSON or just clean the output
-        }
-        
-        # Since we want raw code, we'll use the standard endpoint but 
-        # we'll instruct the model to output only the code block.
-        # Note: 'format': 'json' in Ollama requires the prompt to explicitly ask for JSON.
-        # For raw code, we'll remove the JSON format and clean the output.
-        
-        payload = {
-            "model": self.model_name,
-            "prompt": prompt,
-            "stream": False
-        }
+        return self._generate(prompt)
 
+    def _generate(self, prompt):
+        payload = {"model": self.model_name, "prompt": prompt, "stream": False}
         try:
-            print(f"Sending request to Ollama (model: {self.model_name})...")
-            response = requests.post(self.base_url, json=payload, timeout=60)
+            response = requests.post(self.base_url, json=payload, timeout=self.timeout)
             response.raise_for_status()
             result = response.json()
-            return result.get("response", "").strip()
-        except requests.exceptions.HTTPError as e:
-            print(f"HTTP Error connecting to Ollama: {e}")
-            if e.response.status_code == 404:
-                print("Check if the Ollama server is running. The endpoint /api/generate might be wrong or the server is not responding correctly.")
+            generated = result.get("response")
+            return generated.strip() if isinstance(generated, str) else None
+        except requests.RequestException as exc:
+            print(f"Ollama request failed: {exc}")
             return None
-        except Exception as e:
-            print(f"Unexpected error connecting to Ollama: {e}")
+        except (ValueError, TypeError) as exc:
+            print(f"Unexpected Ollama response: {exc}")
             return None
 
-    def clean_code(self, response):
-        """
-        Removes markdown code blocks (```python ... ```) from the LLM response.
-        """
-        code = response
-        if "```python" in code:
-            code = code.split("```python")[1].split("```")[0]
-        elif "```" in code:
-            code = code.split("```")[1].split("```")[0]
+    @staticmethod
+    def clean_code(response):
+        if not isinstance(response, str):
+            return ""
+        code = response.strip()
+        if code.startswith("```"):
+            lines = code.splitlines()
+            if lines and lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].strip() == "```":
+                lines = lines[:-1]
+            code = "\n".join(lines)
         return code.strip()
